@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\BookServices",
+    "\\BookServices\\App_Code"
   ],
-  "SelectedNode": "\\BookServices.sln",
   "PreviewInSolutionExplorer": false
 }
