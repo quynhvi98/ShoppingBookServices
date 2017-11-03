@@ -43,7 +43,7 @@ public class Service : System.Web.Services.WebService
     [WebMethod]
     public List<Book> searchByName(string query)
     {
-        return searchByName(query);
+        return bm.searchByName(query);
     }
 
     //AuthorModel///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ public class Service : System.Web.Services.WebService
     CartModel cm = new CartModel();
 
     [WebMethod]
-    public List<Cart> getCartByIdUser(String id)
+    public List<Cart> getCartByIdUser(string id)
     {
         return cm.getCartByIdUser(id);
     }
@@ -113,7 +113,7 @@ public class Service : System.Web.Services.WebService
     //CategoryModel////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     CategoryModel catemo = new CategoryModel();
-
+    
     [WebMethod]
     public List<Book> GetBookByCategory(string name_type)
     {
@@ -126,7 +126,7 @@ public class Service : System.Web.Services.WebService
     [WebMethod]
     public bool SendMail_Contact(string hoten, string email, string sdt, string tieude, string noidung)
     {
-        return SendMail_Contact(hoten, email, sdt, tieude, noidung);
+        return conm.SendMail_Contact(hoten, email, sdt, tieude, noidung);
     }
 
     //CustomerAddressModel//////////////////////////////////////////////////////////////////////////////////////////////////////
