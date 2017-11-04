@@ -26,7 +26,7 @@ public class Service : System.Web.Services.WebService
         return bm.GetBooksForSlider();
     }
     [WebMethod]
-    public List<Book> GetBooks(string query1, string query2)
+    public List<Book> GetBooks(int query1, string query2)
     {
         return bm.GetBooks(query1,query2);
     }

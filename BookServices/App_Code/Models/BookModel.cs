@@ -10,98 +10,107 @@ namespace bookstore.Models
 {
     public class BookModel : ConnectDatabase
     {
-        public List<Book> GetBooks(string query1, string query2)
-        {
-            string sql = "SELECT " + query1 + " product.[_id],product.[_name],product.[_IMG],[_price],[_pages],[_weight],[_content],[_status]," +
-                "[_year_of_creation],dbo.producer.[_name],dbo.product_type.[_name],[_name_author],dbo.category.[_name] " +
-                "FROM dbo.product JOIN dbo.product_type ON product_type.[_id] = product.[_type] JOIN dbo.category_product" +
-                " ON category_product.[_id_product] = product.[_id] JOIN dbo.producer ON producer.[_id] = product.[_id_producer]" +
-                " JOIN dbo.author ON author.[_id] = product.[_author] JOIN dbo.category ON category.[_id] = " +
-                "category_product.[_id_category] " + query2;
-            SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            return Table_to_List(dt);
-        }
-
-        public List<Book> Table_to_List(DataTable dt)
+        public List<Book> GetBooks(int query1, string query2)
         {
             List<Book> list = new List<Book>();
-            foreach (DataRow item in dt.Rows)
+            DataClassesDataContext context = new DataClassesDataContext();
+            var result = (from b in context.products
+                          join pt in context.product_types on b._type equals pt._id
+                          join cp in context.category_products on b._id equals cp._id_product
+                          join pd in context.producers on b._id_producer equals pd._id
+                          join au in context.authors on b._author_id equals au._id
+                          join ca in context.categories on cp._id_category equals ca._id
+                          where cp._id_category == query2
+                          select new
+                          {
+                              b._id,
+                              bookname = b._name,
+                              b._IMG,
+                              b._price,
+                              b._pages,
+                              b._weight,
+                              b._content,
+                              b._status,
+                              b._year_of_creation,
+                              producername = pd._name,
+                              product_typename = pt._name,
+                              authorname = au._name_author,
+                              categoryname = ca._name
+                          }).Take(query1);
+            foreach (var item in result)
             {
                 Book book = new Book()
                 {
-                    _id = item[0].ToString(),
-                    _name = item[1].ToString(),
-                    _img = item[2].ToString(),
-                    _price = Convert.ToDouble(item[3].ToString()),
-                    _pages = Convert.ToInt32(item[4].ToString()),
-                    _weight = Convert.ToDouble(item[5].ToString())*1000,
-                    _content = item[6].ToString(),
-                    _status = item[7].ToString(),
-                    _year_of_creation = item[8].ToString(),
-                    _producer = item[9].ToString(),
-                    _type = item[10].ToString(),
-                    _author = item[11].ToString(),
-                    _category = item[12].ToString()
+                    _id = item._id,
+                    _name = item.bookname,
+                    _img = item._IMG,
+                    _price = item._price,
+                    _pages = item._pages,
+                    _weight = item._weight * 1000,
+                    _content = item._content,
+                    _status = item._status,
+                    _year_of_creation = item._year_of_creation.ToString(),
+                    _producer = item.producername,
+                    _type = item.product_typename,
+                    _author = item.authorname,
+                    _category = item.categoryname
                 };
                 list.Add(book);
             }
             return list;
         }
 
+
+
         public double GetRating(string id_book)
         {
-            double rating = 0;
+            double a = 0;
+
             try
             {
-               
-                string sql = "SELECT AVG([_rating]) AS _rating FROM dbo.review WHERE [_id_Product] = '" + id_book + "'";
-                SqlCommand cmd = new SqlCommand(sql, GetConnection());
-                cmd.Connection.Open();
-                SqlDataReader dr = cmd.ExecuteReader();
-                while (dr.Read())
-                    rating = dr.GetInt32(0);
-                cmd.Connection.Close();
-            }catch(Exception e)
-            {
-                rating = 5;
+                DataClassesDataContext context = new DataClassesDataContext();
+                var rat = (context.reviews.Where(r => (r._id_Product == id_book)).Average(r => r._rating));
+                String save = rat.ToString();
+                a = Double.Parse(save);
             }
-          
-            return rating;
+            catch (Exception e)
+            {
+                a = 5;
+            }
+
+            return a;
         }
 
         public Book GetBookByID(string id)
         {
             Book book = null;
-            string sql = "SELECT  product.[_id],product.[_name],product.[_IMG],[_price],[_pages],[_weight],[_content],[_status]," +
-                "[_year_of_creation], dbo.producer.[_name],dbo.product_type.[_name],[_name_author] FROM dbo.product JOIN" +
-                " dbo.product_type ON product_type.[_id] = product.[_type] JOIN dbo.producer ON producer.[_id] =" +
-                " product.[_id_producer] JOIN dbo.author ON author.[_id] = product.[_author] WHERE product.[_id] = '" + id + "'";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            cmd.Connection.Open();
-            SqlDataReader dr = cmd.ExecuteReader();
-            while (dr.Read())
+
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = from p in ctx.products
+                         join pt in ctx.product_types on p._type equals pt._id
+                         join pd in ctx.producers on p._id_producer equals pd._id
+                         join au in ctx.authors on p._author_id equals au._id
+                         where p._id == id
+                         select new { p._id, productname = p._name, p._IMG, p._price, p._pages, p._weight, p._content, p._status, p._year_of_creation, producername = pd._name, producttypename = pt._name, au._name_author };
+            foreach (var item in result)
             {
                 book = new Book()
                 {
-                    _id = dr.GetString(0),
-                    _name = dr.GetString(1),
-                    _img = dr.GetString(2),
-                    _price = dr.GetDouble(3),
-                    _pages = dr.GetInt32(4),
-                    _weight = dr.GetDouble(5)*1000,
-                    _content = dr.GetString(6),
-                    _status = dr.GetString(7),
-                    _year_of_creation = dr.GetInt32(8).ToString(),
-                    _producer = dr.GetString(9),
-                    _type = dr.GetString(10),
-                    _author = dr.GetString(11),
-                    _category = "",
+                    _id = item._id,
+                    _name = item.productname,
+                    _img = item._IMG,
+                    _price = item._price,
+                    _pages = item._pages,
+                    _weight = item._weight,
+                    _content = item._content,
+                    _status = item._status,
+                    _year_of_creation = item._year_of_creation.ToString(),
+                    _producer = item.producername,
+                    _type = item.producttypename,
+                    _author = item._name_author,
+
                 };
             }
-
-            cmd.Connection.Close();
 
             return book;
         }
@@ -112,6 +121,7 @@ namespace bookstore.Models
             SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
             DataTable dt = new DataTable();
             da.Fill(dt);
+            
             return Table_to_List_Search(dt);
         }
 
@@ -134,23 +144,24 @@ namespace bookstore.Models
         public List<Book> GetBooksForSlider()
         {
             List<Book> list = new List<Book>();
-            string sql = "SELECT TOP 12 [_id],[_name],[_IMG] FROM dbo.product";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            cmd.Connection.Open();
-            SqlDataReader dr = cmd.ExecuteReader();
-            while (dr.Read())
+            //string sql = "SELECT TOP 12 [_id],[_name],[_IMG] FROM dbo.product";
+            //SqlCommand cmd = new SqlCommand(sql, GetConnection());
+            //cmd.Connection.Open();
+            //SqlDataReader dr = cmd.ExecuteReader();
+
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = (from b in ctx.products select new { b._id, b._name, b._IMG }).Take(12);
+            foreach (var item in result)
             {
                 Book book = new Book()
                 {
-                    _id = dr.GetString(0),
-                    _name = dr.GetString(1),
-                    _img = dr.GetString(2),
+                    _id = item._id,
+                    _name = item._name,
+                    _img = item._IMG,
 
                 };
                 list.Add(book);
             }
-            cmd.Connection.Close();
-
             return list;
         }
     }

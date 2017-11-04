@@ -15,21 +15,29 @@ namespace bookstore.Models
             SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
             DataTable dt = new DataTable();
             da.Fill(dt);
-            return Table_to_List(dt);
+            DataClassesDataContext context = new DataClassesDataContext();
+            var author = (from a in context.authors select a).Take(4);
+            return Table_to_List(author.ToList<author>());
         }
 
-        public List<Author> Table_to_List(DataTable dt)
+        public List<Author> Table_to_List(List<author> dt)
         {
             List<Author> list = new List<Author>();
-            foreach (DataRow item in dt.Rows)
+            foreach (author item in dt)
             {
-                Author author = new Author()
+                Author author = new Author();
+                author.id_author = item._id.ToString();
+                author.name_author = item._name_author.ToString();
+                author.img_author = item._IMG.ToString();
+                try
                 {
-                    id_author = item[0].ToString(),
-                    name_author = item[1].ToString(),
-                    img_author = item[3].ToString(),
-                    description = item[2].ToString(),
-                  };
+                    author.description = item._description_author.ToString();
+
+                }
+                catch (Exception)
+                {
+                    author.description = null;
+                }
                 list.Add(author);
             }
             return list;
