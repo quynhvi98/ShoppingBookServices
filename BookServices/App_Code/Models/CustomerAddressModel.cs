@@ -32,21 +32,22 @@ namespace bookstore.Models
         {
             try
             {
-                string sql = "SELECT customer_address._id FROM customer_address WHERE _id_customer=@id";
-                SqlCommand cmd = new SqlCommand(sql, GetConnection());
-                cmd.Connection.Open();
-                cmd.Parameters.AddWithValue("@id", id);
-                SqlDataReader dr = cmd.ExecuteReader();
-                if (dr.Read())
-                {
-                    return dr.GetInt32(0);
-                }
+               
+
+                DataClassesDataContext ctx = new DataClassesDataContext();
+                var result = (from cus_add in ctx.customer_addresses
+                              where cus_add._id_customer == id
+                              select cus_add._id).SingleOrDefault();
+
+                
+                    return result;
+                
             }
             catch (Exception e)
             {
                 return -1;
             }
-            return -1;
+            
         }
         public void creatCustomerAddressHaveEmail(String email, String name, String _adddress_full, String _phone, String _city, String _district, int _id_customer)
         {
@@ -70,38 +71,37 @@ namespace bookstore.Models
         {
             try
             {
-                string sql = "SELECT TOP 1 [_id] FROM dbo.customer_address WHERE [_id_customer]=@id ORDER BY [_id] DESC";
-                SqlCommand cmd = new SqlCommand(sql, GetConnection());
-                cmd.Connection.Open();
-                cmd.Parameters.AddWithValue("@id", id);
-                SqlDataReader dr = cmd.ExecuteReader();
-                if (dr.Read())
-                {
-                    return dr.GetInt32(0);
-                }
+               
+                DataClassesDataContext ctx = new DataClassesDataContext();
+                var result = (from cus_add in ctx.customer_addresses
+                              where cus_add._id_customer == id
+                              orderby cus_add._id descending
+                              select cus_add._id).Take(1).SingleOrDefault();
+              
+                return result;      
             }
             catch (Exception e)
             {
                 return -1;
             }
-            return -1;
+
         }
         public List<CustomerAddress> GetListAddressCustomerByCustomerId(int id)
         {
             List<CustomerAddress> list = new List<CustomerAddress>();
-            string sql = "SELECT top 5 * FROM dbo.customer_address WHERE [_id_customer]=@id ";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            cmd.Connection.Open();
-            cmd.Parameters.AddWithValue("@id", id);
-            SqlDataReader dr = cmd.ExecuteReader();
-            while (dr.Read())
+           
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = (from cus_add in ctx.customer_addresses
+                          where cus_add._id_customer == id
+                          select cus_add).Take(5);
+            foreach (var item in result)
             {
                 CustomerAddress customerAddress = new CustomerAddress();
 
-                customerAddress.id = dr.GetInt32(0);
+                customerAddress.id = item._id;
                 try
                 {
-                    customerAddress._adddress_full = dr.GetString(1);
+                    customerAddress._adddress_full = item._adddress_full;
                 }
                 catch (Exception)
                 {
@@ -110,7 +110,7 @@ namespace bookstore.Models
                 }
                 try
                 {
-                    customerAddress._email = dr.GetString(2);
+                    customerAddress._email = item._email;
                 }
                 catch (Exception)
                 {
@@ -120,7 +120,7 @@ namespace bookstore.Models
 
                 try
                 {
-                    customerAddress._phone = dr.GetString(3);
+                    customerAddress._phone = item._phone;
                 }
                 catch (Exception)
                 {
@@ -130,17 +130,17 @@ namespace bookstore.Models
 
                 try
                 {
-                    customerAddress._company = dr.GetString(4);
+                    customerAddress._company = item._company;
 
                 }
                 catch (Exception)
                 {
 
-                    customerAddress._company =null;
+                    customerAddress._company = null;
                 }
                 try
                 {
-                    customerAddress._zipe_code = dr.GetString(5);
+                    customerAddress._zipe_code = item._zipe_code;
                 }
                 catch (Exception)
                 {
@@ -149,16 +149,16 @@ namespace bookstore.Models
                 }
                 try
                 {
-                    customerAddress._nation = dr.GetString(6);
+                    customerAddress._nation = item._nation;
                 }
                 catch (Exception)
                 {
 
-                    customerAddress._nation =null;
+                    customerAddress._nation = null;
                 }
                 try
                 {
-                    customerAddress._city = dr.GetString(6);
+                    customerAddress._city = item._city;
                 }
                 catch (Exception)
                 {
@@ -167,18 +167,18 @@ namespace bookstore.Models
                 }
                 try
                 {
-                    customerAddress._district = dr.GetString(8);
+                    customerAddress._district = item._district;
                 }
                 catch (Exception)
                 {
 
                     customerAddress._district = null;
                 }
-                    customerAddress._id_customer = dr.GetInt32(9);
-             
+                customerAddress._id_customer = int.Parse(item._id_customer.ToString());
+
                 try
                 {
-                    customerAddress._name = dr.GetString(10);
+                    customerAddress._name = item._name;
                 }
                 catch (Exception)
                 {
@@ -186,8 +186,8 @@ namespace bookstore.Models
                     customerAddress._name = null;
                 }
                 list.Add(customerAddress);
+
             }
-            cmd.Connection.Close();
 
             return list;
         }

@@ -144,11 +144,6 @@ namespace bookstore.Models
         public List<Book> GetBooksForSlider()
         {
             List<Book> list = new List<Book>();
-            //string sql = "SELECT TOP 12 [_id],[_name],[_IMG] FROM dbo.product";
-            //SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            //cmd.Connection.Open();
-            //SqlDataReader dr = cmd.ExecuteReader();
-
             DataClassesDataContext ctx = new DataClassesDataContext();
             var result = (from b in ctx.products select new { b._id, b._name, b._IMG }).Take(12);
             foreach (var item in result)

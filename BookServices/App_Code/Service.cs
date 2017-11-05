@@ -223,7 +223,7 @@ public class Service : System.Web.Services.WebService
         om.creatOrder(_total_bill, _customer, _id_customer_address);
     }
     [WebMethod]
-    public int GetIDOrderFromTotalBillIdCustomrAndCustomerAddress(Decimal _total_bill, int _customer, int _id_customer_address)
+    public int GetIDOrderFromTotalBillIdCustomrAndCustomerAddress(double _total_bill, int _customer, int _id_customer_address)
     {
         return om.GetIDOrderFromTotalBillIdCustomrAndCustomerAddress(_total_bill, _customer, _id_customer_address);
     }

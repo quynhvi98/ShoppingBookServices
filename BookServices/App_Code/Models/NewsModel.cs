@@ -48,7 +48,7 @@ namespace bookstore.Models
         {
             News news = null;
             DataClassesDataContext ctx = new DataClassesDataContext();
-            string sql = "SELECT id_new,title,img,date_new,content_new,author_new FROM dbo.book_news WHERE id_new = '" + id_news + "'";
+           
             var result = (from n in ctx.book_news where n.id_new == Int32.Parse(id_news) select n).SingleOrDefault();
             if (result!=null)
             {

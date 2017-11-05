@@ -11,11 +11,7 @@ namespace bookstore.Models
     {
         public List<Book> GetBookByCategory(string name_type)
         {
-            string sql = "SELECT dbo.product.[_id],dbo.product.[_name],[_IMG],[_price],[_price_pages] FROM" +
-                " dbo.product JOIN dbo.product_type ON product_type.[_id] = product.[_type] WHERE product_type.[_name] = N'"+name_type+"'";
-            //SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-            //DataTable dt = new DataTable();
-            //da.Fill(dt);
+            
             DataClassesDataContext ctx = new DataClassesDataContext();
             var result = from p in ctx.products
                          join pt in ctx.product_types on p._type equals pt._id

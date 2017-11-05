@@ -11,37 +11,41 @@ namespace bookstore.Models
     {
         public List<Cart> getCartByIdUser(String id)
         {
-            string sql = "SELECT dbo.cart.[_id],id_user,id_product,quantity,[_IMG],[_price],[_price_pages],[_name],[_repository] FROM cart JOIN dbo.product ON product.[_id] = cart.id_product  WHERE id_user='"+id+ "'";
-            SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            return Table_to_List(dt);
-        }
+            
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = from cart in ctx.carts
+                         join p in ctx.products on cart.id_product equals p._id
+                         where cart.id_user == id
+                         select new { cart._id,cart.id_user,cart.id_product,cart.quantity,p._IMG,p._price,p._price_pages,p._name,p._repository};
 
-        private List<Cart> Table_to_List(DataTable dt)
-        {
             List<Cart> list = new List<Cart>();
-            foreach (DataRow item in dt.Rows)
+            foreach (var item in result)
             {
-                Cart cart = new Cart( );
-                cart._id = Int32.Parse(item[0].ToString());
+                Cart cart = new Cart();
+                cart._id = item._id;
 
-                cart.id_product =item[2].ToString();
-                cart.quantity = Int32.Parse(item[3].ToString());
-                cart.img = item[4].ToString();
-                cart.price = Convert.ToDouble(item[5].ToString());
-                cart.price_pages = Convert.ToDouble(item[6].ToString());
-                cart.name_product = item[7].ToString();
-                cart.repository = Convert.ToInt32(item[8].ToString());
+                cart.id_product = item.id_product;
+                cart.quantity = item.quantity;
+                cart.img = item._IMG;
+                cart.price = item._price;
+                cart.price_pages = double.Parse(item._price_pages.ToString());
+                cart.name_product = item._name;
+                cart.repository = item._repository;
                 list.Add(cart);
             }
             return list;
+
+
         }
+
+      
+           
+       
         public Decimal gettongtien(String id)
         {
             string sql = "SELECT SUM(dbo.product.[_price_pages]*quantity) AS 'dsd'  FROM cart JOIN dbo.product ON product.[_id] = cart.id_product WHERE id_user ='"+id+"'";
             SqlCommand md1 = new SqlCommand(sql, GetConnection());
-
+            
             if (md1.Connection.State == ConnectionState.Closed)
             {
                 md1.Connection.Open();
