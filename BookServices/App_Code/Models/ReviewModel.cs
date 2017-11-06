@@ -48,33 +48,30 @@ namespace bookstore.Models
         {
             try
             {
-                string sql = "INSERT dbo.review([_date],[_comment],[_rating],[_title],[_id_Product],[_id_customer]) VALUES(GETDATE(),@comment, @rate, @title,@id,@cus)";
-                SqlCommand sc = new SqlCommand(sql, GetConnection());
-                if (sc.Connection.State == ConnectionState.Closed)
-                {
-                    sc.Connection.Open();
-                }
-                string idcus = GetCus(name);
-                sc.Parameters.AddWithValue("@comment", comment);
-                sc.Parameters.AddWithValue("@id", id);
-                sc.Parameters.AddWithValue("@rate", rate);
-                sc.Parameters.AddWithValue("@title", comment);
-                sc.Parameters.AddWithValue("@cus", idcus);
-                SqlDataReader sdr = sc.ExecuteReader();
-                sc.Connection.Close();
+                //string sql = "INSERT dbo.review([_date],[_comment],[_rating],[_title],[_id_Product],[_id_customer]) VALUES(GETDATE(),@comment, @rate, @title,@id,@cus)";
+                DataClassesDataContext ctx = new DataClassesDataContext();
+                review re = new review();
+                re._date = DateTime.Now;
+                re._comment = comment;
+                re._id_Product = id;
+                re._rating = rate;
+                re._title = comment;
+                re._id_customer = GetCus(name);
+                ctx.reviews.InsertOnSubmit(re);
+                ctx.SubmitChanges();
             }
             catch(Exception e)
             {
                 String a = "fdf";
             }
         }
-        public string GetCus(string name)
+        public int GetCus(string name)
         {
             DataClassesDataContext ctx = new DataClassesDataContext();
            
             var cus =( from c in ctx.customers where c._user == name select c._id).SingleOrDefault();
     
-            return cus.ToString();
+            return cus;
         }
     }
 }

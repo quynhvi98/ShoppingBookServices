@@ -45,18 +45,15 @@ namespace bookstore.Models
         }
         public void creatCustomer(String email,String user, String name)
         {
-            String sql = "INSERT dbo.customer( [_email],_user ,[_name],_password  )VALUES  ( @email,@user,@name,@password )";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            if (cmd.Connection.State == ConnectionState.Closed)
-            {
-                cmd.Connection.Open();
-            }
-            cmd.Parameters.AddWithValue("@email", email);
-            cmd.Parameters.AddWithValue("@user", user);
-            cmd.Parameters.AddWithValue("@name", name);
-            cmd.Parameters.AddWithValue("@password","123456");
-            int reuslt = cmd.ExecuteNonQuery();
-            cmd.Connection.Close();
+            //String sql = "INSERT dbo.customer( [_email],_user ,[_name],_password  )VALUES  ( @email,@user,@name,@password )";
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            customer cus = new customer();
+            cus._email = email;
+            cus._user = user;
+            cus._name = name;
+            cus._password = "123456";
+            ctx.customers.InsertOnSubmit(cus);
+            ctx.SubmitChanges();
         }
         public int GetIDCustomerByEmail(String email)
         {
@@ -112,17 +109,15 @@ namespace bookstore.Models
         }
         public void Signin(String email, String user, String password, String name)
         {
-            String sql = "INSERT dbo.customer( [_email],_user ,[_name],_password  )VALUES  ( @email,@user,@name,@password )";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            if (cmd.Connection.State == ConnectionState.Closed)
-            {
-                cmd.Connection.Open();
-            }
-            cmd.Parameters.AddWithValue("@email", email);
-            cmd.Parameters.AddWithValue("@user", user);
-            cmd.Parameters.AddWithValue("@name", name);
-            cmd.Parameters.AddWithValue("@password", password);
-            int reuslt = cmd.ExecuteNonQuery();
+            //String sql = "INSERT dbo.customer( [_email],_user ,[_name],_password  )VALUES  ( @email,@user,@name,@password )";
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            customer cus = new customer();
+            cus._email = email;
+            cus._user = user;
+            cus._name = name;
+            cus._password = password;
+            ctx.customers.InsertOnSubmit(cus);
+            ctx.SubmitChanges();
         }
 
     }

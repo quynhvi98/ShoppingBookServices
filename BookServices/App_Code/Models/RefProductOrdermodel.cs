@@ -11,19 +11,17 @@ namespace bookstore.Models
     {
         public void creatRefProductOrder(RefProductOrder refProductOrder,int idOrder)
         {
-            String sql = "INSERT dbo.ref_product_order( [_quantity] ,[_id_order] , [_id_product] ,[_price] )VALUES " +
-                " ( @_quantity , @_id_order , @_id_product , @_price )";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            if (cmd.Connection.State == ConnectionState.Closed)
-            {
-                cmd.Connection.Open();
-            }
-            cmd.Parameters.AddWithValue("@_quantity", refProductOrder._quantity);
-            cmd.Parameters.AddWithValue("@_id_order", idOrder);
-            cmd.Parameters.AddWithValue("@_id_product", refProductOrder._id_product);
-            cmd.Parameters.AddWithValue("@_price", refProductOrder._price);
-            int reuslt = cmd.ExecuteNonQuery();
-            cmd.Connection.Close();
+            //String sql = "INSERT dbo.ref_product_order( [_quantity] ,[_id_order] , [_id_product] ,[_price] )VALUES " +
+            //    " ( @_quantity , @_id_order , @_id_product , @_price )";
+
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            ref_product_order rpo = new ref_product_order();
+            rpo._quantity = refProductOrder._quantity;
+            rpo._id_order = idOrder;
+            rpo._id_product = refProductOrder._id_product;
+            rpo._price = refProductOrder._price;
+            ctx.ref_product_orders.InsertOnSubmit(rpo);
+            ctx.SubmitChanges();
         }
     }
 }

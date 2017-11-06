@@ -11,10 +11,7 @@ namespace bookstore.Models
     {
         public List<Author> GetAuthors()
         {
-            string sql = "SELECT top 4 * FROM dbo.author ";
-            SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-            DataTable dt = new DataTable();
-            da.Fill(dt);
+          
             DataClassesDataContext context = new DataClassesDataContext();
             var author = (from a in context.authors select a).Take(4);
             return Table_to_List(author.ToList<author>());
