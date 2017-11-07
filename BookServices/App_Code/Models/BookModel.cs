@@ -27,6 +27,7 @@ namespace bookstore.Models
                               bookname = b._name,
                               b._IMG,
                               b._price,
+                              b._price_pages,
                               b._pages,
                               b._weight,
                               b._content,
@@ -91,7 +92,7 @@ namespace bookstore.Models
                          join pd in ctx.producers on p._id_producer equals pd._id
                          join au in ctx.authors on p._author_id equals au._id
                          where p._id == id
-                         select new { p._id, productname = p._name, p._IMG, p._price, p._pages, p._weight, p._content, p._status, p._year_of_creation, producername = pd._name, producttypename = pt._name, au._name_author };
+                         select new { p._id, productname = p._name, p._IMG, p._price,p._price_pages, p._pages, p._weight, p._content, p._status, p._year_of_creation, producername = pd._name, producttypename = pt._name, au._name_author };
             foreach (var item in result)
             {
                 book = new Book()
@@ -100,6 +101,7 @@ namespace bookstore.Models
                     _name = item.productname,
                     _img = item._IMG,
                     _price = item._price,
+                    _price_pages = double.Parse(item._price_pages.ToString()),
                     _pages = item._pages,
                     _weight = item._weight,
                     _content = item._content,

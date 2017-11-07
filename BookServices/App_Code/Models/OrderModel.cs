@@ -17,6 +17,8 @@ namespace bookstore.Models
             order_product op = new order_product();
             op._total_bill = _total_bill;
             op._payment_id = 1;
+            op._status_paymen = "Chưa thanh toán";
+            op._status_delivery = "Chưa vận chuyển";
             op._customer_id = _customer;
             op._id_customer_address = _id_customer_address;
             ctx.order_products.InsertOnSubmit(op);
