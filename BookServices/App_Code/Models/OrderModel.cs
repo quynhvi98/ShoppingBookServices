@@ -9,42 +9,43 @@ namespace bookstore.Models
 {
     public class OrderModel : ConnectDatabase
     {
-        public void creatOrder(Decimal _total_bill, int _customer, int _id_customer_address)
+        public void creatOrder(double _total_bill, int _customer, int _id_customer_address)
         {
-            String sql = "INSERT dbo.order_product( [_total_bill],_payment_id,_customer,_id_customer_address)VALUES  " +
-                "( @_total_bill,1,@_customer,@_id_customer_address)";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            if (cmd.Connection.State == ConnectionState.Closed)
-            {
-                cmd.Connection.Open();
-            }
-            cmd.Parameters.AddWithValue("@_total_bill", _total_bill);
-            cmd.Parameters.AddWithValue("@_customer", _customer);
-            cmd.Parameters.AddWithValue("@_id_customer_address", _id_customer_address);
-            int reuslt = cmd.ExecuteNonQuery();
-            cmd.Connection.Close();
+            //String sql = "INSERT dbo.order_product( [_total_bill],_payment_id,_customer,_id_customer_address)VALUES  " +
+            //    "( @_total_bill,1,@_customer,@_id_customer_address)";
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            order_product op = new order_product();
+            op._total_bill = _total_bill;
+            op._payment_id = 1;
+            op._status_paymen = "Chưa thanh toán";
+            op._status_delivery = "Chưa vận chuyển";
+            op._customer_id = _customer;
+            op._id_customer_address = _id_customer_address;
+            ctx.order_products.InsertOnSubmit(op);
+            ctx.SubmitChanges();
         }
-        public int GetIDOrderFromTotalBillIdCustomrAndCustomerAddress(Decimal _total_bill, int _customer, int _id_customer_address)
+        public int GetIDOrderFromTotalBillIdCustomrAndCustomerAddress(double _total_bill, int _customer, int _id_customer_address)
         {
             try
             {
-                string sql = "SELECT [_id] FROM  dbo.order_product WHERE [_total_bill]=@_total_bill AND [_customer] =@_customer AND [_id_customer_address]=_id_customer_address";
-                SqlCommand cmd = new SqlCommand(sql, GetConnection());
-                cmd.Connection.Open();
-                cmd.Parameters.AddWithValue("@_total_bill", _total_bill);
-                cmd.Parameters.AddWithValue("@_customer", _customer);
-                cmd.Parameters.AddWithValue("@_id_customer_address", _id_customer_address);
-                SqlDataReader dr = cmd.ExecuteReader();
-                if (dr.Read())
-                {
-                    return dr.GetInt32(0);
-                }
+              
+
+                DataClassesDataContext ctx = new DataClassesDataContext();
+                var result = (from op in ctx.order_products
+                              where op._total_bill == _total_bill
+                              && op._customer_id == _customer
+                              && op._id_customer_address == _id_customer_address
+                              select op._id).SingleOrDefault();
+
+
+                return result;
+
             }
             catch (Exception e)
             {
                 return -1;
             }
-            return -1;
+            
         }
     }
 }

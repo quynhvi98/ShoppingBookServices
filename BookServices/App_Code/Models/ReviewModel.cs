@@ -12,71 +12,65 @@ namespace bookstore.Models
 
         public List<Review> GetReviews(string id)
         {
-            string sql = "SELECT TOP 5 review.[_id],customer.[_name],review.[_date],[_comment],[_rating],[_title] FROM dbo.review JOIN dbo.product ON product.[_id] = review.[_id_Product] JOIN dbo.customer ON customer.[_id] = review.[_id_customer] WHERE product.[_id] = '" + id + "' ORDER BY review.[_date] DESC";
-            SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            return Table_to_List(dt);
-        }
+           
+          
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = (from re in ctx.reviews
+                          join p in ctx.products on re._id_Product equals p._id
+                          join cus in ctx.customers on re._id_customer equals cus._id
+                          where p._id == id orderby re._date descending
+                          select new { re._id,cus._name,re._date,re._comment,re._rating,re._title}).Take(5);
 
-        private List<Review> Table_to_List(DataTable dt)
-        {
+
+
             List<Review> list = new List<Review>();
-            foreach (DataRow item in dt.Rows)
+            foreach (var item in result)
             {
                 Review review = new Review()
                 {
-                    _id = Int32.Parse(item[0].ToString()),
-                    _name_customer = item[1].ToString(),
-                    _date = DateTime.Parse(item[2].ToString()),
-                    _comment = item[3].ToString(),
-                    _rating = Int32.Parse(item[4].ToString()) * 20,
-                    _title = item[5].ToString()
+                    _id = item._id,
+                    _name_customer = item._name,
+                    _date = DateTime.Parse(item._date.ToString()),
+                    _comment = item._comment,
+                    _rating = int.Parse(item._rating.ToString()) * 20,
+                    _title = item._title
                 };
                 list.Add(review);
             }
+               
+            
             return list;
         }
+
+       
 
         public void Comment_Book(string id, int rate, string comment,string name)
         {
             try
             {
-                string sql = "INSERT dbo.review([_date],[_comment],[_rating],[_title],[_id_Product],[_id_customer]) VALUES(GETDATE(),@comment, @rate, @title,@id,@cus)";
-                SqlCommand sc = new SqlCommand(sql, GetConnection());
-                if (sc.Connection.State == ConnectionState.Closed)
-                {
-                    sc.Connection.Open();
-                }
-                string idcus = GetCus(name);
-                sc.Parameters.AddWithValue("@comment", comment);
-                sc.Parameters.AddWithValue("@id", id);
-                sc.Parameters.AddWithValue("@rate", rate);
-                sc.Parameters.AddWithValue("@title", comment);
-                sc.Parameters.AddWithValue("@cus", idcus);
-                SqlDataReader sdr = sc.ExecuteReader();
-                sc.Connection.Close();
+                //string sql = "INSERT dbo.review([_date],[_comment],[_rating],[_title],[_id_Product],[_id_customer]) VALUES(GETDATE(),@comment, @rate, @title,@id,@cus)";
+                DataClassesDataContext ctx = new DataClassesDataContext();
+                review re = new review();
+                re._date = DateTime.Now;
+                re._comment = comment;
+                re._id_Product = id;
+                re._rating = rate;
+                re._title = comment;
+                re._id_customer = GetCus(name);
+                ctx.reviews.InsertOnSubmit(re);
+                ctx.SubmitChanges();
             }
             catch(Exception e)
             {
                 String a = "fdf";
             }
         }
-        public string GetCus(string name)
+        public int GetCus(string name)
         {
-            string sql = "SELECT _id FROM dbo.customer WHERE [_user] = @name";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            cmd.Connection.Open();
-            cmd.Parameters.AddWithValue("@name", name);
-            SqlDataReader dr = cmd.ExecuteReader();
-            string cus = "";
-            while (dr.Read())
-            {
-                cus = dr.GetInt32(0).ToString();
-            }
-
-            cmd.Connection.Close();
-
+            DataClassesDataContext ctx = new DataClassesDataContext();
+           
+            var cus =( from c in ctx.customers where c._user == name select c._id).SingleOrDefault();
+    
             return cus;
         }
     }

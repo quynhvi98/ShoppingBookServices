@@ -11,37 +11,41 @@ namespace bookstore.Models
     {
         public List<Cart> getCartByIdUser(String id)
         {
-            string sql = "SELECT dbo.cart.[_id],id_user,id_product,quantity,[_IMG],[_price],[_price_pages],[_name],[_repository] FROM cart JOIN dbo.product ON product.[_id] = cart.id_product  WHERE id_user='"+id+ "'";
-            SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            return Table_to_List(dt);
-        }
+            
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = from cart in ctx.carts
+                         join p in ctx.products on cart.id_product equals p._id
+                         where cart.id_user == id
+                         select new { cart._id,cart.id_user,cart.id_product,cart.quantity,p._IMG,p._price,p._price_pages,p._name,p._repository};
 
-        private List<Cart> Table_to_List(DataTable dt)
-        {
             List<Cart> list = new List<Cart>();
-            foreach (DataRow item in dt.Rows)
+            foreach (var item in result)
             {
-                Cart cart = new Cart( );
-                cart._id = Int32.Parse(item[0].ToString());
+                Cart cart = new Cart();
+                cart._id = item._id;
 
-                cart.id_product =item[2].ToString();
-                cart.quantity = Int32.Parse(item[3].ToString());
-                cart.img = item[4].ToString();
-                cart.price = Convert.ToDouble(item[5].ToString());
-                cart.price_pages = Convert.ToDouble(item[6].ToString());
-                cart.name_product = item[7].ToString();
-                cart.repository = Convert.ToInt32(item[8].ToString());
+                cart.id_product = item.id_product;
+                cart.quantity = item.quantity;
+                cart.img = item._IMG;
+                cart.price = item._price;
+                cart.price_pages = double.Parse(item._price_pages.ToString());
+                cart.name_product = item._name;
+                cart.repository = item._repository;
                 list.Add(cart);
             }
             return list;
+
+
         }
+
+      
+           
+       
         public Decimal gettongtien(String id)
         {
             string sql = "SELECT SUM(dbo.product.[_price_pages]*quantity) AS 'dsd'  FROM cart JOIN dbo.product ON product.[_id] = cart.id_product WHERE id_user ='"+id+"'";
             SqlCommand md1 = new SqlCommand(sql, GetConnection());
-
+            
             if (md1.Connection.State == ConnectionState.Closed)
             {
                 md1.Connection.Open();
@@ -68,127 +72,109 @@ namespace bookstore.Models
 
         public void updatecart(String quanti,String user,String product)
         {
-            String sql = "UPDATE dbo.cart SET quantity=@quanti WHERE id_user=@user AND id_product=@product";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            if (cmd.Connection.State == ConnectionState.Closed)
-            {
-                cmd.Connection.Open();
-            }
-            cmd.Parameters.AddWithValue("@quanti", quanti);
-            cmd.Parameters.AddWithValue("@user", user);
-            cmd.Parameters.AddWithValue("@product", product);
-            int reuslt = cmd.ExecuteNonQuery();
-            cmd.Connection.Close();
+            //String sql = "UPDATE dbo.cart SET quantity=@quanti WHERE id_user=@user AND id_product=@product";
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            cart _cart = (from c in ctx.carts
+                         where c.id_user == user && c.id_product == product
+                         select c).SingleOrDefault();
+            _cart.quantity = int.Parse(quanti);
+            ctx.SubmitChanges();
+
         }
         public void creatAndUpdate(String user, String product)
         {
-            string sql = "SELECT * FROM dbo.cart WHERE id_user=@user AND id_product=@product";
-            SqlCommand md1 = new SqlCommand(sql, GetConnection());
-            if (md1.Connection.State == ConnectionState.Closed)
-            {
-                md1.Connection.Open();
-            }
-            md1.Parameters.AddWithValue("@user", user);
-            md1.Parameters.AddWithValue("@product", product);
-            SqlDataReader rd1 = md1.ExecuteReader();
-            
-            if (rd1.Read())
-            {
-                md1.Connection.Close();
+            //string sql = "SELECT * FROM dbo.cart WHERE id_user=@user AND id_product=@product";
+         
 
-                sql = "UPDATE dbo.cart SET quantity=quantity+ CASE WHEN quantity>=30 THEN 0 ELSE 1 END  WHERE id_user=@user AND id_product=@product";
-                SqlCommand md12 = new SqlCommand(sql, GetConnection());
-                if (md12.Connection.State == ConnectionState.Closed)
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            cart ca = (from c in ctx.carts
+                      where c.id_user == user && c.id_product == product
+                      select c).SingleOrDefault();
+
+            if(ca != null)
+            {
+                if (ca.quantity < 30)
                 {
-                    md12.Connection.Open();
+                    ca.quantity += 1;
                 }
-                md12.Parameters.AddWithValue("@user", user);
-                md12.Parameters.AddWithValue("@product", product);
-                SqlDataReader rd11 = md12.ExecuteReader();
+                ctx.SubmitChanges();
             }
             else
             {
-                md1.Connection.Close();
-                sql = "INSERT dbo.cart( id_user, id_product, quantity )VALUES  (@user,@product, 1)";
-                SqlCommand md12 = new SqlCommand(sql, GetConnection());
-                if (md12.Connection.State == ConnectionState.Closed)
-                {
-                    md12.Connection.Open();
-                }
-                md12.Parameters.AddWithValue("@user", user);
-                md12.Parameters.AddWithValue("@product", product);
-                SqlDataReader rd11 = md12.ExecuteReader();
-            }
+                cart cre_cart = new cart();
+                cre_cart.id_user = user;
+                cre_cart.id_product = product;
+                cre_cart.quantity = 1;
+                ctx.carts.InsertOnSubmit(cre_cart);
+                ctx.SubmitChanges();
+            }      
+            //sql = "UPDATE dbo.cart SET quantity=quantity+ CASE WHEN quantity>=30 THEN 0 ELSE 1 END  WHERE id_user=@user AND id_product=@product";
+          
         }
         public List<RefProductOrder> GetlistProductFromIdUser(String id)
         {
-            string sql = "SELECT id_product,quantity,[_price_pages] FROM  dbo.cart JOIN dbo.product ON product.[_id] = cart.id_product  WHERE id_user='"+id+"'";
-            SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            return TablelistProductFromIdUser(dt);
-        }
-        private List<RefProductOrder> TablelistProductFromIdUser(DataTable dt)
-        {
+            //string sql = "SELECT id_product,quantity,[_price_pages] FROM  dbo.cart " +
+            //    "JOIN dbo.product ON product.[_id] = cart.id_product  WHERE id_user='"+id+"'";
+           
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = from c in ctx.carts
+                         join p in ctx.products on c.id_product equals p._id
+                         where c.id_user == id
+                         select new { c.id_product,c.quantity,p._price_pages};
             List<RefProductOrder> list = new List<RefProductOrder>();
-            foreach (DataRow item in dt.Rows)
+            foreach (var item in result)
             {
                 RefProductOrder cart = new RefProductOrder();
-                cart._id_product = item[0].ToString();
-                cart._quantity = int.Parse(item[1].ToString());
-                cart._price = Double.Parse(item[2].ToString());
+                cart._id_product = item.id_product;
+                cart._quantity = item.quantity;
+                cart._price = double.Parse(item._price_pages.ToString());
                 list.Add(cart);
             }
             return list;
         }
+      
         public void Deletecart( String user)
         {
-            String sql = "DELETE FROM dbo.cart  WHERE id_user=@user";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            if (cmd.Connection.State == ConnectionState.Closed)
-            {
-                cmd.Connection.Open();
-            }
-            cmd.Parameters.AddWithValue("@user", user);
-            int reuslt = cmd.ExecuteNonQuery();
-            cmd.Connection.Close();
+            //String sql = "DELETE FROM dbo.cart  WHERE id_user=@user";
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var c = from ca in ctx.carts
+                      where ca.id_user == user
+                      select ca;
+            ctx.carts.DeleteAllOnSubmit(c);
+            ctx.SubmitChanges();
         }
         public void DeletecartFromUserIdAndProductId(String user,String idProduct)
         {
-            String sql = "DELETE FROM dbo.cart WHERE id_user=@user AND id_product=@id_product";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            if (cmd.Connection.State == ConnectionState.Closed)
-            {
-                cmd.Connection.Open();
-            }
-            cmd.Parameters.AddWithValue("@user", user);
-            cmd.Parameters.AddWithValue("@id_product", idProduct);
-            int reuslt = cmd.ExecuteNonQuery();
-            cmd.Connection.Close();
+            //String sql = "DELETE FROM dbo.cart WHERE id_user=@user AND id_product=@id_product";
+
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = from ca in ctx.carts
+                         where ca.id_user == user && ca.id_product == idProduct
+                         select ca;
+            ctx.carts.DeleteAllOnSubmit(result);
+            ctx.SubmitChanges();
         }
 
         public List<Cart> GetlistCartFromIdUser(String id)
         {
-            string sql = "SELECT * FROM cart WHERE id_user='"+id+ "'";
-            SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            return TablelistCartFromIdUserr(dt);
-        }
-        private List<Cart> TablelistCartFromIdUserr(DataTable dt)
-        {
+            //string sql = "SELECT * FROM cart WHERE id_user='"+id+ "'";
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var listcart = from ca in ctx.carts
+                           where ca.id_user == id
+                           select ca;
+
             List<Cart> list = new List<Cart>();
-            foreach (DataRow item in dt.Rows)
+            foreach (var item in listcart)
             {
                 Cart cart = new Cart();
-                cart.id_user = item[1].ToString();
-                cart.id_product = item[2].ToString();
-                cart.quantity = Int32.Parse(item[3].ToString());
+                cart.id_user = item.id_user;
+                cart.id_product = item.id_product;
+                cart.quantity = item.quantity;
                 list.Add(cart);
             }
             return list;
         }
-
+       
         public void UpdateIdserFromIdCustomer(String user, String Customer)
         {
             List<Cart> IdUser = GetlistCartFromIdUser(user);
@@ -205,42 +191,34 @@ namespace bookstore.Models
                 
             }
 
-            String sql = "UPDATE  cart SET  id_user=@Customer WHERE  id_user=@user";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            if (cmd.Connection.State == ConnectionState.Closed)
+            //String sql = "UPDATE  cart SET  id_user=@Customer WHERE  id_user=@user";
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = from ca in ctx.carts where ca.id_user == user
+                     select ca;
+            foreach (var item in result)
             {
-                cmd.Connection.Open();
+                item.id_user = Customer;
             }
-            cmd.Parameters.AddWithValue("@Customer", Customer);
-            cmd.Parameters.AddWithValue("@user", user);
-            int reuslt = cmd.ExecuteNonQuery();
-            cmd.Connection.Close();
+
+            ctx.SubmitChanges();
 
         }
         public void updateCustomerHad(String user, String Customer,String idProdcut,int quantity)
         {
-            String sql = "UPDATE  cart SET quantity=quantity+@quantity WHERE  id_user=@Customer and id_product=@idProdcut";
-            SqlCommand cmd = new SqlCommand(sql, GetConnection());
-            if (cmd.Connection.State == ConnectionState.Closed)
-            {
-                cmd.Connection.Open();
-            }
-            cmd.Parameters.AddWithValue("@Customer", Customer);
-            cmd.Parameters.AddWithValue("@idProdcut", idProdcut);
-            cmd.Parameters.AddWithValue("@quantity", quantity);
-            int reuslt = cmd.ExecuteNonQuery();
-            cmd.Connection.Close();
+            //String sql = "UPDATE  cart SET quantity=quantity+@quantity WHERE  id_user=@Customer and id_product=@idProdcut";
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            cart c = (from ca in ctx.carts
+                      where ca.id_user == Customer && ca.id_product == idProdcut
+                      select ca).SingleOrDefault();
+            c.quantity = c.quantity + quantity;
+            ctx.SubmitChanges();
             //
-            String sql1 = "DELETE FROM cart WHERE  id_user=@user and id_product=@product";
-            SqlCommand cmd1 = new SqlCommand(sql1, GetConnection());
-            if (cmd1.Connection.State == ConnectionState.Closed)
-            {
-                cmd1.Connection.Open();
-            }
-            cmd1.Parameters.AddWithValue("@user", user);
-            cmd1.Parameters.AddWithValue("@product", idProdcut);
-            int reuslt1 = cmd1.ExecuteNonQuery();
-            cmd1.Connection.Close();
+            //String sql1 = "DELETE FROM cart WHERE  id_user=@user and id_product=@product";
+            cart c1 = (from ca in ctx.carts
+                       where ca.id_user == user && ca.id_product == idProdcut
+                       select ca).SingleOrDefault();
+            ctx.carts.DeleteOnSubmit(c1);
+            ctx.SubmitChanges();
         }
     }
 }

@@ -26,7 +26,7 @@ public class Service : System.Web.Services.WebService
         return bm.GetBooksForSlider();
     }
     [WebMethod]
-    public List<Book> GetBooks(string query1, string query2)
+    public List<Book> GetBooks(int query1, string query2)
     {
         return bm.GetBooks(query1,query2);
     }
@@ -218,12 +218,12 @@ public class Service : System.Web.Services.WebService
     OrderModel om = new OrderModel();
 
     [WebMethod]
-    public void creatOrder(Decimal _total_bill, int _customer, int _id_customer_address)
+    public void creatOrder(double _total_bill, int _customer, int _id_customer_address)
     {
         om.creatOrder(_total_bill, _customer, _id_customer_address);
     }
     [WebMethod]
-    public int GetIDOrderFromTotalBillIdCustomrAndCustomerAddress(Decimal _total_bill, int _customer, int _id_customer_address)
+    public int GetIDOrderFromTotalBillIdCustomrAndCustomerAddress(double _total_bill, int _customer, int _id_customer_address)
     {
         return om.GetIDOrderFromTotalBillIdCustomrAndCustomerAddress(_total_bill, _customer, _id_customer_address);
     }
@@ -253,7 +253,7 @@ public class Service : System.Web.Services.WebService
         rm.Comment_Book(id, rate, comment, name);
     }
     [WebMethod]
-    public string GetCus(string name)
+    public int GetCus(string name)
     {
         return rm.GetCus(name);
     }
