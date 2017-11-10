@@ -477,7 +477,7 @@ public class Service : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public DataTable getListProduct()
+    public List<Product> getListProduct()
     {
         return product_manager.getListProduct();
     }

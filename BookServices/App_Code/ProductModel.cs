@@ -8,7 +8,7 @@ using System.Web;
 /// <summary>
 /// Summary description for ProductModel
 /// </summary>
-public class ProductModel :DataProcess
+public class ProductModel : DataProcess
 {
     public ProductModel()
     {
@@ -42,24 +42,43 @@ public class ProductModel :DataProcess
         cmd.Connection.Close();
         return reuslt > 0;
     }
-    public DataTable getListProduct()
+    public List<Product> getListProduct()
     {
         string sql = "SELECT product._id,product._name,_price,_status,producer._name as 'NhaXuatBan',product_type._name as productType,_name_author,_repository" +
             " FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id JOIN BookASMWAD.dbo.author on product._author_id = author._id";
-        SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-        DataTable dt = new DataTable();
-        da.Fill(dt);
-        return dt;  
+        SqlCommand cmd = new SqlCommand(sql, GetConnection());
+        if (cmd.Connection.State == ConnectionState.Closed)
+            cmd.Connection.Open();
+
+        SqlDataReader rd = cmd.ExecuteReader();
+        List<Product> listProduct = new List<Product>();
+        while (rd.Read())
+        {
+            Product product = new Product()
+            {
+                id = rd.GetString(0),
+                name = rd.GetString(1),
+                price = Decimal.Parse(rd.GetDouble(2).ToString()),
+                status = rd.GetString(3),
+                producer = rd.GetString(4),
+                TypeName = rd.GetString(5),
+                AuthorName = rd.GetString(6),
+                repository = rd.GetInt32(7),
+            };
+
+            listProduct.Add(product);
+        }
+        return listProduct;
     }
     public DataTable getListProductToEdit(String id)
     {
-        string sql = "SELECT product._id,product._name,dbo.product.[_IMG],_price,_pages,_weight,_content,_status,_year_of_creation, producer._name as 'NhaXuatBan',product_type._name as productType,_name_author,_repository FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE product._id='" + id+"'";
+        string sql = "SELECT product._id,product._name,dbo.product.[_IMG],_price,_pages,_weight,_content,_status,_year_of_creation, producer._name as 'NhaXuatBan',product_type._name as productType,_name_author,_repository FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE product._id='" + id + "'";
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
         return dt;
     }
-    public bool updateProduct(Product product,String IDCu)
+    public bool updateProduct(Product product, String IDCu)
     {
         String sql = "UPDATE BookASMWAD.dbo.product SET " +
             "_id=@id ," +
@@ -131,7 +150,7 @@ public class ProductModel :DataProcess
         List<ProductType> list = productTypeModel.GetlistIDProductType();
         for (int i = 0; i < list.Count; i++)
         {
-            sql = "SELECT N'"+ list[i].name+"' AS 'name' ,SUM(_repository) AS'tongsoluong'   FROM dbo.product WHERE [_type]="+list[i].id+" GROUP BY [_type]";
+            sql = "SELECT N'" + list[i].name + "' AS 'name' ,SUM(_repository) AS'tongsoluong'   FROM dbo.product WHERE [_type]=" + list[i].id + " GROUP BY [_type]";
             da = new SqlDataAdapter(sql, GetConnection());
             da.Fill(dt);
         }
@@ -155,7 +174,7 @@ public class ProductModel :DataProcess
             sql = "SELECT product._id,product._name,_price,_status,producer._name as 'NhaXuatBan',product_type._name as productType,_name_author,_repository" +
             " FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE dbo.product.[_price] = '" + query + "'";
         }
-        
+
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);

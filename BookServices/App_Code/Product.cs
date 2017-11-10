@@ -26,4 +26,7 @@ public class Product
     public int type { get; set; }
     public int author { get; set; }
     public Decimal price_pages { get; set; }
+    public string producer { get; set; }
+    public string TypeName { get; set; }
+    public string AuthorName { get; set; }
 }
