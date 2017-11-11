@@ -18,6 +18,7 @@ namespace bookstore.Models
         public int repository { get; set; }
         public override bool Equals(object obj)
         {
+
             if(obj is Cart)
             {
                 var item = obj as Cart;
