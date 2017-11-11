@@ -88,20 +88,41 @@ public class AuthorModel : DataProcess
         cmd.Connection.Close();
         return result > 0;
     }
-    public DataTable SearchAuthor(string query, int type)
+    public List<Author> SearchAuthor(string query, int type)
     {
-        string sql = "";
+        List<Author> list = new List<Author>();
+        DataClassesDataContext ctx = new DataClassesDataContext();
         if (type == 1)
         {
-            sql = "SELECT _id, _name_author, _description_author from author  WHERE _id = '" + query + "'";
+            //sql = "SELECT _id, _name_author, _description_author from author  WHERE _id = '" + query + "'";
+            var result = from author in ctx.authors where author._id == int.Parse(query) select new { author._id, author._name_author, author._description_author};
+            foreach (var item in result)
+            {
+                Author au = new Author()
+                {
+                    id_author = item._id,
+                    name_author = item._name_author,
+                    description = item._description_author,
+                };
+                list.Add(au);
+            }
+            
         }
         if (type == 2)
         {
-            sql = "SELECT _id, _name_author, _description_author from author  WHERE _name_author LIKE N'%" + query + "%'";
+            //sql = "SELECT _id, _name_author, _description_author from author  WHERE _name_author LIKE N'%" + query + "%'";
+            var result = from author in ctx.authors where author._name_author.Contains(@query) select author;
+            foreach (var item in result)
+            {
+                Author au = new Author()
+                {
+                    id_author = item._id,
+                    name_author = item._name_author,
+                    description = item._description_author,
+                };
+                list.Add(au);
+            }
         }
-        SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-        DataTable dt = new DataTable();
-        da.Fill(dt);
-        return dt;
+        return list;
     }
 }

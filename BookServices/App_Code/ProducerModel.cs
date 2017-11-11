@@ -83,20 +83,57 @@ public class ProducerModel : DataProcess
         cmd.Connection.Close();
         return result > 0;
     }
-    public DataTable SearchProducer(string query, int type)
+    //public DataTable SearchProducer(string query, int type)
+    //{
+    //    string sql = "";
+    //    if (type == 1)
+    //    {
+    //        sql = "SELECT _id, _name, _description from producer  WHERE _id = '" + query + "'";
+    //    }
+    //    if (type == 2)
+    //    {
+    //        sql = "SELECT _id, _name, _description from producer  WHERE _name LIKE N'%" + query + "%'";
+    //    }
+    //    SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
+    //    DataTable dt = new DataTable();
+    //    da.Fill(dt);
+    //    return dt;
+    //}
+    public List<Producer> SearchProducer(string query, int type)
     {
-        string sql = "";
+        List<Producer> list = new List<Producer>();
+        DataClassesDataContext ctx = new DataClassesDataContext();
         if (type == 1)
         {
-            sql = "SELECT _id, _name, _description from producer  WHERE _id = '" + query + "'";
+            var result = from producer in ctx.producers where producer._id== int.Parse(query) select new { producer._id, producer._name, producer._description };
+            foreach (var item in result)
+            {
+                Producer producer = new Producer()
+                {
+                    id = item._id,
+                    name = item._name,
+                    description = item._description
+
+                };
+                list.Add(producer);
+            }
+
         }
         if (type == 2)
         {
-            sql = "SELECT _id, _name, _description from producer  WHERE _name LIKE N'%" + query + "%'";
+            var result = from producer in ctx.producers where producer._name.Contains(@query) select producer;
+            foreach (var item in result)
+            {
+                Producer producer = new Producer()
+                {
+                    id = item._id,
+                    name = item._name,
+                    description = item._description
+
+                };
+                list.Add(producer);
+            }
         }
-        SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-        DataTable dt = new DataTable();
-        da.Fill(dt);
-        return dt;
+        return list;
     }
 }
