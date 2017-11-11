@@ -1,6 +1,7 @@
 ﻿using bookstore.Models;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Web;
 using System.Web.Services;
@@ -17,8 +18,12 @@ public class Service : System.Web.Services.WebService
         //Uncomment the following line if using designed components 
         //InitializeComponent(); 
     }
+
+    ////BookStoreService////////////////////////////////////////////////////
+
+
     //BookModel/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    BookModel bm = new BookModel();
+    bookstore.Models.BookModel bm = new bookstore.Models.BookModel();
 
     [WebMethod]
     public List<Book> GetBooksForSlider()
@@ -47,17 +52,17 @@ public class Service : System.Web.Services.WebService
     }
 
     //AuthorModel///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    AuthorModel am = new AuthorModel();
+    bookstore.Models.AuthorModel am = new bookstore.Models.AuthorModel();
 
     [WebMethod]
-    public List<Author> GetAuthors()
+    public List<bookstore.Models.Author> GetAuthors()
     {
         return am.GetAuthors();
     }
 
     //CartModel////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    CartModel cm = new CartModel();
+    bookstore.Models.CartModel cm = new bookstore.Models.CartModel();
 
     [WebMethod]
     public List<Cart> getCartByIdUser(string id)
@@ -112,7 +117,7 @@ public class Service : System.Web.Services.WebService
 
     //CategoryModel////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    CategoryModel catemo = new CategoryModel();
+    bookstore.Models.CategoryModel catemo = new bookstore.Models.CategoryModel();
     
     [WebMethod]
     public List<Book> GetBookByCategory(string name_type)
@@ -131,7 +136,7 @@ public class Service : System.Web.Services.WebService
 
     //CustomerAddressModel//////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    CustomerAddressModel cam = new CustomerAddressModel();
+    bookstore.Models.CustomerAddressModel cam = new bookstore.Models.CustomerAddressModel();
 
     [WebMethod]
     public void creatCustomerAddress(String _name, String _adddress_full, String _phone, String _city, String _district, int _id_customer)
@@ -166,7 +171,7 @@ public class Service : System.Web.Services.WebService
 
     
     //CustomerModel///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    CustomerModel cusm = new CustomerModel();
+    bookstore.Models.CustomerModel cusm = new bookstore.Models.CustomerModel();
 
     [WebMethod]
     public bool LoginWithAccAndPass(String userAccount, String password)
@@ -201,7 +206,7 @@ public class Service : System.Web.Services.WebService
 
 
     //NewModel///////////////////////////////////////////////////////////////////////////////////////////////////////////
-    NewsModel nm = new NewsModel();
+    bookstore.Models.NewsModel nm = new bookstore.Models.NewsModel();
 
     [WebMethod]
     public List<News> GetListNews(int type)
@@ -213,9 +218,9 @@ public class Service : System.Web.Services.WebService
     {
         return nm.GetNewsByID(id_news);
     }
-    
+
     //OrderModel/////////////////////////////////////////////////////////////////////////////////////////////////////////
-    OrderModel om = new OrderModel();
+    bookstore.Models.OrderModel om = new bookstore.Models.OrderModel();
 
     [WebMethod]
     public void creatOrder(double _total_bill, int _customer, int _id_customer_address)
@@ -229,7 +234,7 @@ public class Service : System.Web.Services.WebService
     }
 
     //RefProductOrderModel////////////////////////////////////////////////////////////////////////////////////////////////
-    RefProductOrdermodel rpo = new RefProductOrdermodel();
+    bookstore.Models.RefProductOrdermodel rpo = new bookstore.Models.RefProductOrdermodel();
 
     [WebMethod]
     public void creatRefProductOrder(RefProductOrder refProductOrder, int idOrder)
@@ -239,7 +244,7 @@ public class Service : System.Web.Services.WebService
 
 
     //ReviewModel//////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ReviewModel rm = new ReviewModel();
+    bookstore.Models.ReviewModel rm = new bookstore.Models.ReviewModel();
 
     [WebMethod]
     public List<Review> GetReviews(string id)
@@ -257,4 +262,289 @@ public class Service : System.Web.Services.WebService
     {
         return rm.GetCus(name);
     }
+
+    //////////BookManagerService////////////////////////////
+
+    AuthorModel au_manager = new AuthorModel();
+
+    [WebMethod]
+    public List<String> GetlistAuthor()
+    {
+        return au_manager.GetlistAuthor();
+    }
+
+    [WebMethod]
+    public int GetIdProductTypeByName(String Name)
+    {
+        return au_manager.GetIdProductTypeByName(Name);
+    }
+
+    [WebMethod]
+    public bool AddAuthors(Author author)
+    {
+        return au_manager.AddAuthors(author);
+    }
+
+    [WebMethod]
+    public bool HasIdAuthor(Author author)
+    {
+        return au_manager.HasIdAuthor(author);
+    }
+
+    [WebMethod]
+    public bool UpdateAuthor(Author author)
+    {
+        return au_manager.UpdateAuthor(author);
+    }
+
+    [WebMethod]
+    public DataTable SearchAuthor(string query, int type)
+    {
+        return au_manager.SearchAuthor(query, type);
+    }
+
+    //CategoryModel/////////////////////////
+    CategoryModel cate_manager = new CategoryModel();
+
+    [WebMethod]
+    public String GetIdProductTypeByName_CateModel(String Name)
+    {
+        return cate_manager.GetIdProductTypeByName(Name);
+    }
+
+    //CategoryProductModel///////////////////////////
+    CategoryProductModel catepm_manager = new CategoryProductModel();
+    
+    [WebMethod]
+    public Boolean AddCategoryProduct(CategoryProduct categoryProduct)
+    {
+        return catepm_manager.AddCategoryProduct(categoryProduct);
+    }
+
+    [WebMethod]
+    public void AddListCategoryProduct(List<String> list, String productId)
+    {
+        catepm_manager.AddListCategoryProduct(list, productId);
+    }
+
+    [WebMethod]
+    public List<String> GetListCategoryProductID(String productId)
+    {
+        return catepm_manager.GetListCategoryProductID(productId);
+    }
+
+    [WebMethod]
+    public void delCategoryProductID(String productId)
+    {
+        catepm_manager.delCategoryProductID(productId);
+    }
+
+    //CustomerModel////////////////////////
+    CustomerModel cm_manager = new CustomerModel();
+
+    [WebMethod]
+    public bool UpdateCustomer(Customer customer)
+    {
+        return cm_manager.UpdateCustomer(customer);
+    }
+
+    [WebMethod]
+    public DataTable SearchCustomer(string query, int type)
+    {
+        return cm_manager.SearchCustomer(query, type);
+    }
+
+    //ProducerModel//////////////////////////////
+    ProducerModel pm_manager = new ProducerModel();
+
+    [WebMethod]
+    public List<String> GetlistProducer()
+    {
+        return pm_manager.GetlistProducer();
+    }
+
+    [WebMethod]
+    public int GetIdProducerByName(String Name)
+    {
+        return pm_manager.GetIdProducerByName(Name);
+    }
+
+    [WebMethod]
+    public bool AddProducer(Producer producer)
+    {
+        return pm_manager.AddProducer(producer);
+    }
+
+    [WebMethod]
+    public bool HasIdProducer(Producer producer)
+    {
+        return pm_manager.HasIdProducer(producer);
+    }
+
+    [WebMethod]
+    public bool UpdateProducer(Producer producer)
+    {
+        return pm_manager.UpdateProducer(producer);
+    }
+
+    [WebMethod]
+    public DataTable SearchProducer(string query, int type)
+    {
+        return pm_manager.SearchProducer(query, type);
+    }
+
+    //DataProcess/////////////////////////////
+    DataProcess dp = new DataProcess();
+
+    [WebMethod]
+    public DataTable GetListOrder()
+    {
+        return dp.GetListOrder();
+    }
+
+    [WebMethod]
+    public bool DeleteOrder(string id)
+    {
+        return dp.DeleteOrder(id);
+    }
+
+    [WebMethod]
+    public bool UpdateOrderProduct(string id, string payment_type, string status_payment, string status_delivery)
+    {
+        return dp.UpdateOrderProduct(id, payment_type,status_payment,status_delivery);
+    }
+
+    [WebMethod]
+    public DataTable OrderDetailsByID(string id)
+    {
+        return dp.OrderDetailsByID(id);
+    }
+
+    [WebMethod]
+    public List<string> GetInfoCustomer_Order(string id)
+    {
+        return dp.GetInfoCustomer_Order(id);
+    }
+
+    [WebMethod]
+    public DataTable GetSortData(string sort_type)
+    {
+        return dp.GetSortData(sort_type);
+    }
+
+    [WebMethod]
+    public DataTable SearchOrder(string query, int type)
+    {
+        return dp.SearchOrder(query,type);
+    }
+
+    [WebMethod]
+    public DataTable GetCustomerInformation()
+    {
+        return dp.GetCustomerInformation();
+    }
+
+    [WebMethod]
+    public DataTable GetProducerInformation()
+    {
+        return dp.GetProducerInformation();
+    }
+
+    [WebMethod]
+    public DataTable GetAuthorInformation()
+    {
+        return dp.GetAuthorInformation();
+    }
+
+    [WebMethod]
+    public bool LoginWithAccAndPass_DataProcess(String userAccount, String password)
+    {
+        return dp.LoginWithAccAndPass(userAccount, password);
+    }
+
+    [WebMethod]
+    public List<string> DataTableToList(DataTable dt)
+    {
+        return dp.DataTableToList(dt);
+    }
+    //ProductModel//////////////////
+    ProductModel product_manager = new ProductModel();
+
+    [WebMethod]
+    public Boolean AddProduct(Product product)
+    {
+        return product_manager.AddProduct(product);
+    }
+
+    [WebMethod]
+    public List<Product> getListProduct()
+    {
+        return product_manager.getListProduct();
+    }
+
+    [WebMethod]
+    public DataTable getListProductToEdit(String id)
+    {
+        return product_manager.getListProductToEdit(id);
+    }
+
+    [WebMethod]
+    public bool updateProduct(Product product, String IDCu)
+    {
+        return product_manager.updateProduct(product, IDCu);
+    }
+
+    [WebMethod]
+    public DataTable getListTongDoanhThuBanTheoSanPham()
+    {
+        return product_manager.getListTongDoanhThuBanTheoSanPham();
+    }
+
+    [WebMethod]
+    public DataTable getListTongDoanhThuBanTheoType()
+    {
+        return product_manager.getListTongDoanhThuBanTheoType();
+    }
+
+    [WebMethod]
+    public DataTable getListTongDoanhThuBanTheoThangNayVoiType()
+    {
+        return product_manager.getListTongDoanhThuBanTheoThangNayVoiType();
+    }
+
+    [WebMethod]
+    public DataTable getSoLuongCoTrongKhoHang()
+    {
+        return product_manager.getSoLuongCoTrongKhoHang();
+    }
+
+    [WebMethod]
+    public DataTable SearchProduct(string query, int type)
+    {
+        return product_manager.SearchProduct(query,type);
+    }
+
+    //ProductType/////////////////
+    ProductTypeModel pt_manager = new ProductTypeModel();
+
+    [WebMethod]
+    public List<String> GetlistProductType()
+    {
+        return pt_manager.GetlistProductType();
+    }
+
+    [WebMethod]
+    public int GetIdProductTypeByName_ProductType(String Name)
+    {
+        return pt_manager.GetIdProductTypeByName(Name);
+    }
+
+    [WebMethod]
+    public List<ProductType> GetlistIDProductType()
+    {
+        return pt_manager.GetlistIDProductType();
+    }
+    
+    
+
 }

@@ -13,5 +13,13 @@ namespace bookstore.Models
         public String password { get; set; }
         public String name { get; set; }
         public String status { get; set; }
+
+
+        //public string id { get; set; }
+        //public String email { get; set; }
+        //public String user { get; set; }
+        //public String password { get; set; }
+        //public String name { get; set; }
+        //public String status { get; set; }
     }
 }
