@@ -16,6 +16,7 @@ namespace bookstore.Models
         public double price_pages { get; set; }
         public string name_product { get; set; }
         public int repository { get; set; }
+
         public override bool Equals(object obj)
         {
 

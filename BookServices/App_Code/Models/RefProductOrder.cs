@@ -11,5 +11,7 @@ namespace bookstore.Models
         public int _id_order { get; set; }
         public String _id_product { get; set; }
         public Double _price { get; set; }
+        public string _name_product { get; set; }
+        public Double _total { get; set; }
     }
 }

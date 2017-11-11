@@ -23,13 +23,34 @@ public class DataProcess
 
 
     //Order
-    public DataTable GetListOrder()
+    public List<Order> GetListOrder()
     {
-        string sql = "SELECT _id,[_total_bill],_content,[_status_paymen],[_status_delivery],[_status_bill],[_date] FROM dbo.order_product JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id]";
-        SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-        DataTable dt = new DataTable();
-        da.Fill(dt);
-        return dt;
+        DataClassesDataContext ctx = new DataClassesDataContext();
+        //string sql = "SELECT _id,[_total_bill],_content,[_status_paymen],[_status_delivery]," +
+        //    "[_status_bill],[_date] FROM dbo.order_product " +
+        //    "JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id]";
+        //SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
+        //DataTable dt = new DataTable();
+        //da.Fill(dt);
+        var result = from o in ctx.order_products
+                     join p in ctx.paymens on o._payment_id equals p._payment_id
+                     select new { o._id,o._total_bill,p._content,o._status_paymen,o._status_delivery,o._status_bill,o._date};
+        List<Order> list = new List<Order>();
+        foreach (var item in result)
+        {
+            Order order = new Order()
+            {
+                id=item._id,
+                total_bill = item._total_bill,
+                content = item._content,
+                status_payment = item._status_paymen,
+                status_delivery = item._status_delivery,
+                status_bill = item._status_bill,
+                date = item._date,
+            };
+            list.Add(order);
+        }
+        return list;
     }
 
     public bool DeleteOrder(string id)
@@ -47,27 +68,48 @@ public class DataProcess
 
     public bool UpdateOrderProduct(string id, string payment_type, string status_payment, string status_delivery)
     {
-        string sql = "UPDATE dbo.order_product SET _payment_id=@pi, _status_paymen=@sp,_status_delivery=@sd WHERE _id=@id";
-
-        SqlCommand cmd = new SqlCommand(sql, GetConnection());
-        if (cmd.Connection.State == ConnectionState.Closed)
-            cmd.Connection.Open();
-        cmd.Parameters.AddWithValue("@pi", payment_type);
-        cmd.Parameters.AddWithValue("@sp", status_payment);
-        cmd.Parameters.AddWithValue("@sd", status_delivery);
-        cmd.Parameters.AddWithValue("@id", id);
-        int result = cmd.ExecuteNonQuery();
-        cmd.Connection.Close();
-        return result > 0;
+        //string sql = "UPDATE dbo.order_product SET _payment_id=@pi, _status_paymen=@sp,_status_delivery=@sd WHERE _id=@id";
+        DataClassesDataContext ctx = new DataClassesDataContext();
+        order_product order = (from op in ctx.order_products
+                              where op._id == int.Parse(id)
+                              select op).SingleOrDefault();
+        //SqlCommand cmd = new SqlCommand(sql, GetConnection());
+        //if (cmd.Connection.State == ConnectionState.Closed)
+        //    cmd.Connection.Open();
+        //cmd.Parameters.AddWithValue("@pi", payment_type);
+        //cmd.Parameters.AddWithValue("@sp", status_payment);
+        //cmd.Parameters.AddWithValue("@sd", status_delivery);
+        //cmd.Parameters.AddWithValue("@id", id);
+        //int result = cmd.ExecuteNonQuery();
+        //cmd.Connection.Close();
+        //return result > 0;
+        order._payment_id = int.Parse(payment_type);
+        order._status_paymen = status_payment;
+        order._status_delivery = status_delivery;
+        ctx.SubmitChanges();
+        return true;
     }
 
-    public DataTable OrderDetailsByID(string id)
+    public List<RefProductOrder> OrderDetailsByID(string id)
     {
         string sql = "SELECT product.[_id],product.[_name],[_quantity],dbo.ref_product_order.[_price],([_quantity]*dbo.ref_product_order.[_price]) AS total FROM dbo.product JOIN dbo.ref_product_order ON ref_product_order.[_id_product] = product.[_id] WHERE [_id_order]='" + id + "'";
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
-        return dt;
+        List<RefProductOrder> list = new List<RefProductOrder>();
+        foreach (DataRow item in dt.Rows)
+        {
+            RefProductOrder order = new RefProductOrder()
+            {
+                _id_order = int.Parse(item[0].ToString()),
+                _name_product = item[1].ToString(),
+                _quantity = int.Parse(item[2].ToString()),
+                _price = double.Parse(item[3].ToString()),
+                _total = double.Parse(item[4].ToString())
+            };
+            list.Add(order);
+        }
+        return list;
     }
 
     public List<string> GetInfoCustomer_Order(string id)
@@ -85,16 +127,35 @@ public class DataProcess
         return customer;
     }
 
-    public DataTable GetSortData(string sort_type)
+    public List<Order> GetSortData(string sort_type)
     {
+        DataClassesDataContext ctx = new DataClassesDataContext();
+        //var result = from o in ctx.order_products orderby sort_type ascending
+        //             join p in ctx.paymens on o._payment_id equals p._payment_id 
+        //             select new { o._id, o._total_bill, p._content, o._status_paymen, o._status_delivery, o._status_bill, o._date };
         string sql = "SELECT _id,[_total_bill],_content,[_status_paymen],[_status_delivery],[_status_bill],[_date] FROM dbo.order_product JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id] ORDER BY " + sort_type + " ASC";
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
-        return dt;
+        List<Order> list = new List<Order>();
+        foreach (DataRow item in dt.Rows)
+        {
+            Order order = new Order()
+            {
+                id = int.Parse(item[0].ToString()),
+                total_bill = double.Parse(item[1].ToString()),
+                content = item[2].ToString(),
+                status_payment = item[3].ToString(),
+                status_delivery = item[4].ToString(),
+                status_bill = item[5].ToString(),
+                date = DateTime.Parse(item[6].ToString())
+            };
+            list.Add(order);
+        }
+        return list;
     }
 
-    public DataTable SearchOrder(string query, int type)
+    public List<Order> SearchOrder(string query, int type)
     {
         string sql = "";
         if (type == 1)
@@ -105,11 +166,26 @@ public class DataProcess
         {
             sql = "SELECT dbo.order_product._id,[_total_bill],_content,[_status_paymen],[_status_delivery],[_status_bill],[_date] FROM dbo.order_product JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id] JOIN dbo.customer ON customer.[_id] = order_product.[_customer_id] WHERE [_name] LIKE N'%" + query + "%'";
         }
-
+        List<Order> list = new List<Order>();
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
-        return dt;
+        foreach (DataRow item in dt.Rows)
+        {
+            Order order = new Order()
+            {
+                id = int.Parse(item[0].ToString()),
+                total_bill = double.Parse(item[1].ToString()),
+                content = item[2].ToString(),
+                status_payment = item[3].ToString(),
+                status_delivery = item[4].ToString(),
+                status_bill = item[5].ToString(),
+                date = DateTime.Parse(item[6].ToString()),
+
+            };
+            list.Add(order);
+        }
+        return list;
     }
 
     public List<string> DataTableToList(DataTable dt)

@@ -399,7 +399,7 @@ public class Service : System.Web.Services.WebService
     DataProcess dp = new DataProcess();
 
     [WebMethod]
-    public DataTable GetListOrder()
+    public List<Order> GetListOrder()
     {
         return dp.GetListOrder();
     }
@@ -417,7 +417,7 @@ public class Service : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public DataTable OrderDetailsByID(string id)
+    public List<RefProductOrder> OrderDetailsByID(string id)
     {
         return dp.OrderDetailsByID(id);
     }
@@ -429,13 +429,13 @@ public class Service : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public DataTable GetSortData(string sort_type)
+    public List<Order> GetSortData(string sort_type)
     {
         return dp.GetSortData(sort_type);
     }
 
     [WebMethod]
-    public DataTable SearchOrder(string query, int type)
+    public List<Order> SearchOrder(string query, int type)
     {
         return dp.SearchOrder(query, type);
     }
