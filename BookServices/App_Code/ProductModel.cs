@@ -182,28 +182,99 @@ public class ProductModel : DataProcess
         }
         return dt;
     }
-    public DataTable SearchProduct(string query, int type)
+    public List<Product> SearchProduct(string query, int type)
     {
-        string sql = "";
+        DataClassesDataContext ctx = new DataClassesDataContext();
+        //string sql = "";
+        List<Product> list = new List<Product>();
         if (type == 1)
         {
-            sql = "SELECT product._id,product._name,_price,_status,producer._name as 'NhaXuatBan',product_type._name as productType,_name_author,_repository" +
-            " FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE dbo.product.[_id]='" + query + "'";
+            //sql = "SELECT product._id,product._name,_price,_status,producer._name as 'NhaXuatBan',product_type._name " +
+            //    "as productType,_name_author,_repository" +
+            //" FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id " +
+            //"JOIN BookASMWAD.dbo.product_type on product._type = product_type._id " +
+            //"JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE dbo.product.[_id]='" + query + "'";
+            var result = from p in ctx.products
+                         join pc in ctx.producers on p._id_producer equals pc._id
+                         join pt in ctx.product_types on p._type equals pt._id
+                         join au in ctx.authors on p._author_id equals au._id
+                         where p._id == query
+                         select new { p._id, productname = p._name, p._price, p._status, producername = pc._name, producttypename = pt._name, au._name_author, p._repository };
+            foreach (var item in result)
+            {
+                Product product = new Product()
+                {
+                    id = item._id,
+                    name = item.productname,
+                    price = Decimal.Parse(item._price.ToString()),
+                    status = item._status,
+                    producer = item.producername,
+                    TypeName = item.producttypename,
+                    AuthorName = item._name_author,
+                    repository = item._repository,
+                };
+                list.Add(product);
+            }
         }
         if (type == 2)
         {
-            sql = "SELECT product._id,product._name,_price,_status,producer._name as 'NhaXuatBan',product_type._name as productType,_name_author,_repository" +
-            " FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE dbo.product.[_name] LIKE N'%" + query + "%'";
+            //sql = "SELECT product._id,product._name,_price,_status,producer._name as 'NhaXuatBan',product_type._name " +
+            //    "as productType,_name_author,_repository" +
+            //" FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id " +
+            //"JOIN BookASMWAD.dbo.product_type on product._type = product_type._id " +
+            //"JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE dbo.product.[_name] LIKE N'%" + query + "%'";
+            var result = from p in ctx.products
+                         join pc in ctx.producers on p._id_producer equals pc._id
+                         join pt in ctx.product_types on p._type equals pt._id
+                         join au in ctx.authors on p._author_id equals au._id
+                         where p._name.Contains(@query)
+                         select new { p._id, productname = p._name, p._price, p._status, producername = pc._name, producttypename = pt._name, au._name_author, p._repository };
+            foreach (var item in result)
+            {
+                Product product = new Product()
+                {
+                    id = item._id,
+                    name = item.productname,
+                    price = Decimal.Parse(item._price.ToString()),
+                    status = item._status,
+                    producer = item.producername,
+                    TypeName = item.producttypename,
+                    AuthorName = item._name_author,
+                    repository = item._repository,
+                };
+                list.Add(product);
+            }
         }
         if (type == 3)
         {
-            sql = "SELECT product._id,product._name,_price,_status,producer._name as 'NhaXuatBan',product_type._name as productType,_name_author,_repository" +
-            " FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE dbo.product.[_price] = '" + query + "'";
+            //sql = "SELECT product._id,product._name,_price,_status,producer._name as 'NhaXuatBan',product_type._name as productType,_name_author,_repository" +
+            //" FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE dbo.product.[_price] = '" + query + "'";
+            var result = from p in ctx.products
+                         join pc in ctx.producers on p._id_producer equals pc._id
+                         join pt in ctx.product_types on p._type equals pt._id
+                         join au in ctx.authors on p._author_id equals au._id
+                         where p._price == double.Parse(query)
+                         select new { p._id, productname = p._name, p._price, p._status, producername = pc._name, producttypename = pt._name, au._name_author, p._repository };
+            foreach (var item in result)
+            {
+                Product product = new Product()
+                {
+                    id = item._id,
+                    name = item.productname,
+                    price = Decimal.Parse(item._price.ToString()),
+                    status = item._status,
+                    producer = item.producername,
+                    TypeName = item.producttypename,
+                    AuthorName = item._name_author,
+                    repository = item._repository,
+                };
+                list.Add(product);
+            }
         }
 
-        SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-        DataTable dt = new DataTable();
-        da.Fill(dt);
-        return dt;
+        //SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
+        //DataTable dt = new DataTable();
+        //da.Fill(dt);
+        return list;
     }
 }

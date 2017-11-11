@@ -350,7 +350,7 @@ public class Service : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public DataTable SearchCustomer(string query, int type)
+    public List<Customer> SearchCustomer(string query, int type)
     {
         return cm_manager.SearchCustomer(query, type);
     }
@@ -440,7 +440,7 @@ public class Service : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public DataTable GetCustomerInformation()
+    public List<Customer> GetCustomerInformation()
     {
         return dp.GetCustomerInformation();
     }
@@ -520,7 +520,7 @@ public class Service : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public DataTable SearchProduct(string query, int type)
+    public List<Product> SearchProduct(string query, int type)
     {
         return product_manager.SearchProduct(query, type);
     }

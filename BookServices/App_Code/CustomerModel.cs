@@ -29,28 +29,42 @@ public class CustomerModel : DataProcess
         cmd.Connection.Close();
         return result > 0;
     }
-    public DataTable SearchCustomer(string query, int type)
+    public List<Customer> SearchCustomer(string query, int type)
     {
         string sql = "";
         if (type == 1)
         {
-            sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name], SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] LEFT JOIN dbo.order_product ON order_product.[_customer] = customer.[_id] WHERE customer._id = '" + query + "'" + "GROUP BY dbo.customer.[_id], customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
+            sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name], SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] LEFT JOIN dbo.order_product ON order_product.[_customer_id] = customer.[_id] WHERE customer._id = '" + query + "'" + "GROUP BY dbo.customer.[_id], customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
         }
         if (type == 2)
         {
-            sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name], SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] LEFT JOIN dbo.order_product ON order_product.[_customer] = customer.[_id]  WHERE customer.[_name] LIKE N'%" + query + "%'" + "GROUP BY dbo.customer.[_id], customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
+            sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name], SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] LEFT JOIN dbo.order_product ON order_product.[_customer_id] = customer.[_id]  WHERE customer.[_name] LIKE N'%" + query + "%'" + "GROUP BY dbo.customer.[_id], customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
         }
         if (type == 3)
         {
-            sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name], SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] LEFT JOIN dbo.order_product ON order_product.[_customer] = customer.[_id]  WHERE dbo.customer_address._adddress_full LIKE N'%" + query + "%'" + "GROUP BY dbo.customer.[_id], customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
+            sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name], SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] LEFT JOIN dbo.order_product ON order_product.[_customer_id] = customer.[_id]  WHERE dbo.customer_address._adddress_full LIKE N'%" + query + "%'" + "GROUP BY dbo.customer.[_id], customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
         }
         if (type == 4)
         {
-            sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name], SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] LEFT JOIN dbo.order_product ON order_product.[_customer] = customer.[_id]   WHERE dbo.order_product.[_total_bill] > '" + query + "'" + "GROUP BY dbo.customer.[_id], customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
+            sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name], SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] LEFT JOIN dbo.order_product ON order_product.[_customer_id] = customer.[_id]   WHERE dbo.order_product.[_total_bill] > '" + query + "'" + "GROUP BY dbo.customer.[_id], customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
         }
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
-        return dt;
+        List<Customer> list = new List<Customer>();
+        foreach (DataRow item in dt.Rows)
+        {
+            Customer customer = new Customer() {
+                id = int.Parse(item[0].ToString()),
+                email = item[1].ToString(),
+                user = item[2].ToString(),
+                name = item[3].ToString(),
+                total_bill= double.Parse(item[4].ToString()),
+                address_full = item[5].ToString(),
+                status = item[6].ToString()
+            };
+            list.Add(customer);
+        }
+        return list;
     }
 }

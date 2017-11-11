@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Data;
+using bookstore.Models;
 /// <summary>
 /// Summary description for DataProcess
 /// </summary>
@@ -11,7 +12,7 @@ public class DataProcess
 {
     public DataProcess()
     {
-       
+
 
     }
     public SqlConnection GetConnection()
@@ -44,10 +45,10 @@ public class DataProcess
 
     }
 
-    public bool UpdateOrderProduct(string id,string payment_type,string status_payment,string status_delivery)
+    public bool UpdateOrderProduct(string id, string payment_type, string status_payment, string status_delivery)
     {
         string sql = "UPDATE dbo.order_product SET _payment_id=@pi, _status_paymen=@sp,_status_delivery=@sd WHERE _id=@id";
-            
+
         SqlCommand cmd = new SqlCommand(sql, GetConnection());
         if (cmd.Connection.State == ConnectionState.Closed)
             cmd.Connection.Open();
@@ -62,7 +63,7 @@ public class DataProcess
 
     public DataTable OrderDetailsByID(string id)
     {
-        string sql = "SELECT product.[_id],product.[_name],[_quantity],dbo.ref_product_order.[_price],([_quantity]*dbo.ref_product_order.[_price]) AS total FROM dbo.product JOIN dbo.ref_product_order ON ref_product_order.[_id_product] = product.[_id] WHERE [_id_order]='" + id+"'";
+        string sql = "SELECT product.[_id],product.[_name],[_quantity],dbo.ref_product_order.[_price],([_quantity]*dbo.ref_product_order.[_price]) AS total FROM dbo.product JOIN dbo.ref_product_order ON ref_product_order.[_id_product] = product.[_id] WHERE [_id_order]='" + id + "'";
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
@@ -71,7 +72,7 @@ public class DataProcess
 
     public List<string> GetInfoCustomer_Order(string id)
     {
-        string sql = "SELECT customer.[_name],[_adddress_full],[_date],[_content],[_total_bill] FROM dbo.customer JOIN dbo.customer_address ON customer_address.[_id_customer] = customer.[_id] JOIN dbo.order_product ON order_product.[_customer_id] = customer.[_id] JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id] WHERE order_product.[_id]='" + id+"'";
+        string sql = "SELECT customer.[_name],[_adddress_full],[_date],[_content],[_total_bill] FROM dbo.customer JOIN dbo.customer_address ON customer_address.[_id_customer] = customer.[_id] JOIN dbo.order_product ON order_product.[_customer_id] = customer.[_id] JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id] WHERE order_product.[_id]='" + id + "'";
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
@@ -86,14 +87,14 @@ public class DataProcess
 
     public DataTable GetSortData(string sort_type)
     {
-        string sql = "SELECT _id,[_total_bill],_content,[_status_paymen],[_status_delivery],[_status_bill],[_date] FROM dbo.order_product JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id] ORDER BY "+ sort_type + " ASC";
+        string sql = "SELECT _id,[_total_bill],_content,[_status_paymen],[_status_delivery],[_status_bill],[_date] FROM dbo.order_product JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id] ORDER BY " + sort_type + " ASC";
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
         return dt;
     }
 
-    public DataTable SearchOrder(string query,int type)
+    public DataTable SearchOrder(string query, int type)
     {
         string sql = "";
         if (type == 1)
@@ -102,9 +103,9 @@ public class DataProcess
         }
         if (type == 2)
         {
-            sql = "SELECT dbo.order_product._id,[_total_bill],_content,[_status_paymen],[_status_delivery],[_status_bill],[_date] FROM dbo.order_product JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id] JOIN dbo.customer ON customer.[_id] = order_product.[_customer_id] WHERE [_name] LIKE N'%"+query+"%'";
+            sql = "SELECT dbo.order_product._id,[_total_bill],_content,[_status_paymen],[_status_delivery],[_status_bill],[_date] FROM dbo.order_product JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id] JOIN dbo.customer ON customer.[_id] = order_product.[_customer_id] WHERE [_name] LIKE N'%" + query + "%'";
         }
-        
+
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
@@ -122,13 +123,32 @@ public class DataProcess
         return list;
     }
     //customer
-    public DataTable GetCustomerInformation()
+    public List<Customer> GetCustomerInformation()
     {
-        string sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name], SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] LEFT JOIN dbo.order_product ON order_product.[_customer_id] = customer.[_id] GROUP BY dbo.customer.[_id], dbo.customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
+        List<Customer> list = new List<Customer>();
+        string sql = "SELECT dbo.customer._id, dbo.customer.[_email], dbo.customer.[_user], dbo.customer.[_name]," +
+            " SUM(dbo.order_product.[_total_bill]) AS _total_bill, dbo.customer_address.[_adddress_full], dbo.customer._status " +
+            "FROM dbo.customer JOIN dbo.customer_address ON dbo.customer.[_id]= dbo.customer_address.[_id_customer] " +
+            "LEFT JOIN dbo.order_product ON order_product.[_customer_id] = customer.[_id] GROUP BY dbo.customer.[_id], " +
+            "dbo.customer.[_email],[_user], customer.[_name], dbo.customer_address.[_adddress_full], dbo.customer._status";
         SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
         DataTable dt = new DataTable();
         da.Fill(dt);
-        return dt;
+        foreach (DataRow item in dt.Rows)
+        {
+            Customer customer = new Customer()
+            {
+                id = int.Parse(item[0].ToString()),
+                email = item[1].ToString(),
+                user = item[2].ToString(),
+                name = item[3].ToString(),
+                total_bill = double.Parse(item[4].ToString()),
+                address_full = item[5].ToString(),
+                status = item[6].ToString()
+            };
+            list.Add(customer);
+        }
+        return list;
     }
     //producer
     public DataTable GetProducerInformation()
@@ -182,5 +202,5 @@ public class DataProcess
         return true;
     }
 
-   
+
 }

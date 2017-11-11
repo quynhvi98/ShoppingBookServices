@@ -13,7 +13,9 @@ namespace bookstore.Models
         public String password { get; set; }
         public String name { get; set; }
         public String status { get; set; }
-
+        public double total_bill { get; set; }
+        public string address_full { get; set; }
+       
 
         //public string id { get; set; }
         //public String email { get; set; }
