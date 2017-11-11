@@ -151,22 +151,42 @@ public class DataProcess
         return list;
     }
     //producer
-    public DataTable GetProducerInformation()
+    public List<Producer> GetProducerInformation()
     {
-        string sql = "SELECT * FROM dbo.producer";
-        SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-        DataTable dt = new DataTable();
-        da.Fill(dt);
-        return dt;
+        List<Producer> list = new List<Producer>();
+        DataClassesDataContext ctx = new DataClassesDataContext();
+        var result = from producer in ctx.producers select producer;
+        foreach (var item in result)
+        {
+            Producer producer = new Producer()
+            {
+                id = item._id,
+                name = item._name,
+                description = item._description
+
+            };
+            list.Add(producer);
+        }
+        return list;
     }
     //author
-    public DataTable GetAuthorInformation()
+    public List<Author> GetAuthorInformation()
     {
-        string sql = "SELECT * FROM dbo.author";
-        SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-        DataTable dt = new DataTable();
-        da.Fill(dt);
-        return dt;
+        List<Author> list = new List<Author>();
+        DataClassesDataContext ctx = new DataClassesDataContext();
+        var result = from au in ctx.authors select au;
+        foreach (var item in result)
+        {
+            Author author = new Author()
+            {
+                id_author = item._id,
+                name_author = item._name_author,
+                img_author = item._IMG,
+                description = item._description_author,
+            };
+            list.Add(author);
+        }
+        return list;
     }
 
 

@@ -266,6 +266,7 @@ public class Service : System.Web.Services.WebService
 
     //////////BookManagerService////////////////////////////
 
+        //Author model manager
     AuthorModel au_manager = new AuthorModel();
 
     [WebMethod]
@@ -299,7 +300,7 @@ public class Service : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public DataTable SearchAuthor(string query, int type)
+    public List<Author> SearchAuthor(string query, int type)
     {
         return au_manager.SearchAuthor(query, type);
     }
@@ -389,7 +390,7 @@ public class Service : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public DataTable SearchProducer(string query, int type)
+    public List<Producer> SearchProducer(string query, int type)
     {
         return pm_manager.SearchProducer(query, type);
     }
@@ -446,13 +447,13 @@ public class Service : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public DataTable GetProducerInformation()
+    public List<Producer> GetProducerInformation()
     {
         return dp.GetProducerInformation();
     }
 
     [WebMethod]
-    public DataTable GetAuthorInformation()
+    public List<Author> GetAuthorInformation()
     {
         return dp.GetAuthorInformation();
     }
