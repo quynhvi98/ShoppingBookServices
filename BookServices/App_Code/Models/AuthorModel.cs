@@ -23,7 +23,7 @@ namespace bookstore.Models
             foreach (author item in dt)
             {
                 Author author = new Author();
-                author.id_author = item._id.ToString();
+                author.id_author = item._id;
                 author.name_author = item._name_author.ToString();
                 author.img_author = item._IMG.ToString();
                 try
