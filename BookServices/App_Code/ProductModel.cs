@@ -15,75 +15,87 @@ public class ProductModel : DataProcess
     }
     public Boolean AddProduct(Product product)
     {
-        String sql = " INSERT dbo.product ( " +
-            "[_id] ,[_name] , [_IMG] ,dbo.product.[_price_pages],[_price] ,[_pages],[_repository] ,[_weight] ,[_content] ,[_status] ,[_date] , [_year_of_creation] ,[_id_producer] ,[_type] ,[_author_id]) VALUES " +
-            " (@id, @name, @IMG, @_price_pages, @price ,  @pages ,@repository, @weight ,@content , @status , GETDATE() , @yearOfCreation ,@_id_producer , @type,@author)";
-        SqlCommand cmd = new SqlCommand(sql, GetConnection());
-        cmd.Parameters.AddWithValue("id", product.id);
-        cmd.Parameters.AddWithValue("name", product.name);
-        cmd.Parameters.AddWithValue("IMG", product.IMG);
-        cmd.Parameters.AddWithValue("@_price_pages", product.price_pages);
-        cmd.Parameters.AddWithValue("price", product.price);
-        cmd.Parameters.AddWithValue("pages", product.pages);
-        cmd.Parameters.AddWithValue("repository", product.repository);
-        cmd.Parameters.AddWithValue("weight", product.weight);
-        cmd.Parameters.AddWithValue("content", product.content);
-        cmd.Parameters.AddWithValue("status", product.status);
-        cmd.Parameters.AddWithValue("yearOfCreation", product.year_of_creation);
-        cmd.Parameters.AddWithValue("_id_producer", product.idProducer);
-        cmd.Parameters.AddWithValue("type", product.type);
-        cmd.Parameters.AddWithValue("author", product.author);
-        if (cmd.Connection.State == ConnectionState.Closed)
+        //String sql = " INSERT dbo.product ( " +
+        //    "[_id] ,[_name] , [_IMG] ,dbo.product.[_price_pages],[_price] ,[_pages],[_repository] ,[_weight] ,[_content] ,[_status] ,[_date] , [_year_of_creation] ,[_id_producer] ,[_type] ,[_author_id]) VALUES " +
+        //    " (@id, @name, @IMG, @_price_pages, @price ,  @pages ,@repository, @weight ,@content , @status , GETDATE() , @yearOfCreation ,@_id_producer , @type,@author)";
+        DataClassesDataContext ctx = new DataClassesDataContext();
+        try
         {
-            cmd.Connection.Open();
+            product p = new global::product()
+            {
+                _id = product.id,
+                _name = product.name,
+                _IMG = product.IMG,
+                _price_pages = product.price_pages,
+                _price = double.Parse(product.price.ToString()),
+                _pages = product.pages,
+                _repository = product.repository,
+                _weight = product.weight,
+                _content = product.content,
+                _status = product.status,
+                _year_of_creation = int.Parse(product.year_of_creation),
+                _id_producer = product.idProducer,
+                _type = product.type,
+                _author_id = product.author
+            };
+            ctx.products.InsertOnSubmit(p);
+            ctx.SubmitChanges();
+            return true;
+        }
+        catch
+        {
+            return false;
         }
 
-        int reuslt = cmd.ExecuteNonQuery();
-        cmd.Connection.Close();
-        return reuslt > 0;
+
     }
     public List<Product> getListProduct()
     {
-        string sql = "SELECT product._id,product._name,_price,_status,producer._name as 'NhaXuatBan',product_type._name as productType,_name_author,_repository" +
-            " FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id JOIN BookASMWAD.dbo.author on product._author_id = author._id";
-        SqlCommand cmd = new SqlCommand(sql, GetConnection());
-        if (cmd.Connection.State == ConnectionState.Closed)
-            cmd.Connection.Open();
-
-        SqlDataReader rd = cmd.ExecuteReader();
+        //string sql = "SELECT product._id,product._name,_price,_status,producer._name as" +
+        //    " 'NhaXuatBan',product_type._name as productType,_name_author,_repository" +
+        //    " FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on product._id_producer = producer._id JOIN" +
+        //    " BookASMWAD.dbo.product_type on product._type = product_type._id JOIN" +
+        //    " BookASMWAD.dbo.author on product._author_id = author._id";
+        DataClassesDataContext ctx = new DataClassesDataContext();
+        var result = from p in ctx.products
+                     join pd in ctx.producers on p._id_producer equals pd._id
+                     join pt in ctx.product_types on p._type equals pt._id
+                     join au in ctx.authors on p._author_id equals au._id
+                     select new { p._id, productname = p._name, p._status, p._price, p.producer, producername = pd._name, producttypename = pt._name, au._name_author, p._repository };
         List<Product> listProduct = new List<Product>();
-        while (rd.Read())
+        foreach (var item in result)
         {
             Product product = new Product()
             {
-                id = rd.GetString(0),
-                name = rd.GetString(1),
-                price = Decimal.Parse(rd.GetDouble(2).ToString()),
-                status = rd.GetString(3),
-                producer = rd.GetString(4),
-                TypeName = rd.GetString(5),
-                AuthorName = rd.GetString(6),
-                repository = rd.GetInt32(7),
+                id = item._id,
+                name = item.productname,
+                price = Decimal.Parse(item._price.ToString()),
+                status = item._status,
+                producer = item.producername,
+                TypeName = item.producttypename,
+                AuthorName = item._name_author,
+                repository = item._repository,
             };
 
             listProduct.Add(product);
         }
+
         return listProduct;
     }
     public Product getListProductToEdit(String id)
     {
-        string sql = "SELECT product._id,product._name,dbo.product.[_IMG],_price,_pages,_weight,_content," +
-            "_status,_year_of_creation, producer._name as 'NhaXuatBan',product_type._name as productType,_name_author," +
-            "_repository FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on" +
-            " product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id " +
-            "JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE product._id='" + id + "'";
+        //string sql = "SELECT product._id,product._name,dbo.product.[_IMG],_price,_pages,_weight,_content," +
+        //    "_status,_year_of_creation, producer._name as 'NhaXuatBan',product_type._name as productType,_name_author," +
+        //    "_repository FROM BookASMWAD.dbo.product JOIN BookASMWAD.dbo.producer on" +
+        //    " product._id_producer = producer._id JOIN BookASMWAD.dbo.product_type on product._type = product_type._id " +
+        //    "JOIN BookASMWAD.dbo.author on product._author_id = author._id WHERE product._id='" + id + "'";
         DataClassesDataContext ctx = new DataClassesDataContext();
         var result = (from p in ctx.products
                       join pc in ctx.producers on p._id_producer equals pc._id
                       join pt in ctx.product_types on p._type equals pt._id
                       join au in ctx.authors on p._author_id equals au._id
                       where p._id == id
-                      select new {p._id,productname= p._name,p._IMG,p._price,p._pages,p._weight,p._content,p._status,p._year_of_creation,producername= pc._name,producttypename= pt._name,au._name_author,p._repository }).SingleOrDefault();
+                      select new { p._id, productname = p._name, p._IMG, p._price, p._pages, p._weight, p._content, p._status, p._year_of_creation, producername = pc._name, producttypename = pt._name, au._name_author, p._repository }).SingleOrDefault();
         Product product = new Product()
         {
             id = result._id,
@@ -106,41 +118,46 @@ public class ProductModel : DataProcess
     }
     public bool updateProduct(Product product, String IDCu)
     {
-        String sql = "UPDATE BookASMWAD.dbo.product SET " +
-            "_id=@id ," +
-            "_name=@name," +
-             "_IMG=@IMG," +
-            "_price=@price," +
-            "_pages=@page," +
-            "_repository=@repository," +
-            "_weight=@weight," +
-            "_content=@content," +
-            "_status=@status," +
-            "_id_producer=@procucer" +
-            ",_type=@type" +
-            ",_author_id=@author " +
-            "WHERE _id=@idCu";
-        SqlCommand cmd = new SqlCommand(sql, GetConnection());
-        if (cmd.Connection.State == ConnectionState.Closed)
+        try
         {
-            cmd.Connection.Open();
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = (from p in ctx.products
+                          where p._id == IDCu
+                          select p).SingleOrDefault();
+            result._name = product.name;
+            result._IMG = product.IMG;
+            result._price = double.Parse(product.price.ToString());
+            result._pages = product.pages;
+            result._repository = product.repository;
+            result._weight = product.weight;
+            result._content = product.content;
+            result._status = product.status;
+            result._id_producer = product.idProducer;
+            result._type = product.type;
+            result._author_id = product.author;
+            ctx.SubmitChanges();
+            return true;
         }
-        cmd.Parameters.AddWithValue("@id", product.id);
-        cmd.Parameters.AddWithValue("@name", product.name);
-        cmd.Parameters.AddWithValue("@IMG", product.IMG);
-        cmd.Parameters.AddWithValue("@price", product.price);
-        cmd.Parameters.AddWithValue("@page", product.pages);
-        cmd.Parameters.AddWithValue("@repository", product.repository);
-        cmd.Parameters.AddWithValue("@weight", product.weight);
-        cmd.Parameters.AddWithValue("@content", product.content);
-        cmd.Parameters.AddWithValue("@status", product.status);
-        cmd.Parameters.AddWithValue("@procucer", product.idProducer);
-        cmd.Parameters.AddWithValue("@type", product.type);
-        cmd.Parameters.AddWithValue("@author", product.author);
-        cmd.Parameters.AddWithValue("@idCu", product.id);
-        int reuslt = cmd.ExecuteNonQuery();
-        cmd.Connection.Close();
-        return reuslt > 0;
+        catch
+        {
+            return false;
+        }
+        //String sql = "UPDATE BookASMWAD.dbo.product SET " +
+        //    "_id=@id ," +
+        //    "_name=@name," +
+        //     "_IMG=@IMG," +
+        //    "_price=@price," +
+        //    "_pages=@page," +
+        //    "_repository=@repository," +
+        //    "_weight=@weight," +
+        //    "_content=@content," +
+        //    "_status=@status," +
+        //    "_id_producer=@procucer" +
+        //    ",_type=@type" +
+        //    ",_author_id=@author " +
+        //    "WHERE _id=@idCu";
+       
+
     }
     public DataTable getListTongDoanhThuBanTheoSanPham()
     {
@@ -272,9 +289,6 @@ public class ProductModel : DataProcess
             }
         }
 
-        //SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-        //DataTable dt = new DataTable();
-        //da.Fill(dt);
         return list;
     }
 }

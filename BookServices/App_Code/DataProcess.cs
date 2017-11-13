@@ -29,18 +29,16 @@ public class DataProcess
         //string sql = "SELECT _id,[_total_bill],_content,[_status_paymen],[_status_delivery]," +
         //    "[_status_bill],[_date] FROM dbo.order_product " +
         //    "JOIN dbo.paymen ON paymen.[_payment_id] = order_product.[_payment_id]";
-        //SqlDataAdapter da = new SqlDataAdapter(sql, GetConnection());
-        //DataTable dt = new DataTable();
-        //da.Fill(dt);
+
         var result = from o in ctx.order_products
                      join p in ctx.paymens on o._payment_id equals p._payment_id
-                     select new { o._id,o._total_bill,p._content,o._status_paymen,o._status_delivery,o._status_bill,o._date};
+                     select new { o._id, o._total_bill, p._content, o._status_paymen, o._status_delivery, o._status_bill, o._date };
         List<Order> list = new List<Order>();
         foreach (var item in result)
         {
             Order order = new Order()
             {
-                id=item._id,
+                id = item._id,
                 total_bill = item._total_bill,
                 content = item._content,
                 status_payment = item._status_paymen,
@@ -55,14 +53,25 @@ public class DataProcess
 
     public bool DeleteOrder(string id)
     {
-        string sql = "UPDATE dbo.order_product SET _status_bill = N'Đã hủy' WHERE [_id] = @id";
-        SqlCommand cmd = new SqlCommand(sql, GetConnection());
-        if (cmd.Connection.State == ConnectionState.Closed)
-            cmd.Connection.Open();
-        cmd.Parameters.AddWithValue("@id", id);
-        int result = cmd.ExecuteNonQuery();
-        cmd.Connection.Close();
-        return result > 0;
+        //string sql = "UPDATE dbo.order_product " +
+        //   "SET _status_bill = N'Đã hủy' WHERE [_id] = @id";
+        try
+        {
+            DataClassesDataContext ctx = new DataClassesDataContext();
+            var result = (from op in ctx.order_products
+                          where op._id == int.Parse(id)
+                          select op).SingleOrDefault();
+            result._status_bill = "Đã hủy";
+            ctx.SubmitChanges();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+
+
+
 
     }
 
@@ -71,18 +80,9 @@ public class DataProcess
         //string sql = "UPDATE dbo.order_product SET _payment_id=@pi, _status_paymen=@sp,_status_delivery=@sd WHERE _id=@id";
         DataClassesDataContext ctx = new DataClassesDataContext();
         order_product order = (from op in ctx.order_products
-                              where op._id == int.Parse(id)
-                              select op).SingleOrDefault();
-        //SqlCommand cmd = new SqlCommand(sql, GetConnection());
-        //if (cmd.Connection.State == ConnectionState.Closed)
-        //    cmd.Connection.Open();
-        //cmd.Parameters.AddWithValue("@pi", payment_type);
-        //cmd.Parameters.AddWithValue("@sp", status_payment);
-        //cmd.Parameters.AddWithValue("@sd", status_delivery);
-        //cmd.Parameters.AddWithValue("@id", id);
-        //int result = cmd.ExecuteNonQuery();
-        //cmd.Connection.Close();
-        //return result > 0;
+                               where op._id == int.Parse(id)
+                               select op).SingleOrDefault();
+
         order._payment_id = int.Parse(payment_type);
         order._status_paymen = status_payment;
         order._status_delivery = status_delivery;
@@ -212,16 +212,23 @@ public class DataProcess
         da.Fill(dt);
         foreach (DataRow item in dt.Rows)
         {
-            Customer customer = new Customer()
+            Customer customer = new Customer();
+            customer.id = int.Parse(item[0].ToString());
+            customer.email = item[1].ToString();
+            customer.user = item[2].ToString();
+            customer.name = item[3].ToString();
+            try
             {
-                id = int.Parse(item[0].ToString()),
-                email = item[1].ToString(),
-                user = item[2].ToString(),
-                name = item[3].ToString(),
-                total_bill = double.Parse(item[4].ToString()),
-                address_full = item[5].ToString(),
-                status = item[6].ToString()
-            };
+                customer.total_bill = double.Parse(item[4].ToString());
+            }
+            catch (Exception)
+            {
+                customer.total_bill = 0;
+
+            }
+
+            customer.address_full = item[5].ToString();
+            customer.status = item[6].ToString();
             list.Add(customer);
         }
         return list;
@@ -269,34 +276,29 @@ public class DataProcess
     //lethanh tạo get id dang nhap
     public bool LoginWithAccAndPass(String userAccount, String password)
     {
-        String sql = "SELECT* FROM administrator WHERE _user = @userAccount AND _password = @password";
-        SqlCommand cmd = new SqlCommand(sql, GetConnection());
-        if (cmd.Connection.State == ConnectionState.Closed)
+        DataClassesDataContext ctx = new DataClassesDataContext();
+        var result = (from admin in ctx.administrators
+                      where admin._user == userAccount && admin._password == password
+                      select admin).SingleOrDefault();
+        //String sql = "SELECT* FROM administrator WHERE _user = @userAccount AND _password = @password";
+        //if (rd.HasRows != true)
+        if (result==null)
         {
-            cmd.Connection.Open();
-        }
-        cmd.Parameters.AddWithValue("@userAccount", userAccount);
-        cmd.Parameters.AddWithValue("@password", password);
-        SqlDataReader rd = cmd.ExecuteReader();
-        if (rd.HasRows != true)
-        {
-            String sql1 = "SELECT * FROM administrator WHERE  _email=@userAccount AND _password=@password";
-            SqlCommand md1 = new SqlCommand(sql1, GetConnection());
-            if (md1.Connection.State == ConnectionState.Closed)
+            //String sql1 = "SELECT * FROM administrator WHERE  _email=@userAccount AND _password=@password";
+            var result1 = (from admin in ctx.administrators
+                           where admin._email == userAccount && admin._password == password
+                           select admin).SingleOrDefault();
+           
+            if (result1 != null)
             {
-                md1.Connection.Open();
+                return true;
             }
-            md1.Parameters.AddWithValue("@userAccount", userAccount);
-            md1.Parameters.AddWithValue("@password", password);
-            SqlDataReader rd1 = md1.ExecuteReader();
-            bool check = rd1.HasRows;
-            md1.Clone();
-            return check;
-        }
-        cmd.Clone();
-
+            else
+            {
+                return false;
+            }           
+        }    
         return true;
     }
-
 
 }
